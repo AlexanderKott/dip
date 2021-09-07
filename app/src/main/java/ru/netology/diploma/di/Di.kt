@@ -2,6 +2,7 @@ package ru.netology.diploma.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.work.WorkManager
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.installations.FirebaseInstallations
@@ -42,8 +43,8 @@ internal object ModuleForViewModel{
 @InstallIn(SingletonComponent::class)
 internal object ModuleForSingleton {
 
-    private const val BASE_URL = "${BuildConfig.BASE_URL}/api/slow/"
-
+    private const val BASE_URL = "${BuildConfig.BASE_URL}/api/"
+// /api/slow/"
     @Singleton
     @Provides
     fun getGoogleApiAvailability() = GoogleApiAvailability.getInstance()
@@ -58,8 +59,8 @@ internal object ModuleForSingleton {
 
     @Singleton
     @Provides
-    fun getPostRepository(db: AppDb, api: ApiService): AppEntities =
-        PostRepositoryImpl(db, api)
+    fun getPostRepository(db: AppDb, api: ApiService, @ApplicationContext context: Context): AppEntities =
+        PostRepositoryImpl(db, api, context)
 
     @Provides
     fun getAppDb(@ApplicationContext context: Context) = AppDb.getInstance(context = context)
@@ -67,8 +68,8 @@ internal object ModuleForSingleton {
 
     @Singleton
     @Provides
-    fun getAppAuth(@ApplicationContext context : Context, api : ApiService): AppAuth {
-       return AppAuth(context, api)
+    fun getAppAuth(@ApplicationContext context : Context, api : ApiService, repo : AppEntities): AppAuth {
+       return AppAuth(context, api, repo)
     }
 
 
@@ -86,12 +87,12 @@ internal object ModuleForSingleton {
 
   @Provides
   fun getPrefs(@ApplicationContext context: Context) : SharedPreferences {
-      return context.getSharedPreferences("auth", Context.MODE_PRIVATE)
+      return context.getSharedPreferences("authX", Context.MODE_PRIVATE)
   }
 
     @Provides
     fun getService(prefs : SharedPreferences)  = OkHttpClient.Builder()
-        .connectTimeout(6, TimeUnit.MINUTES)
+        .connectTimeout(55, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .addInterceptor(logging)

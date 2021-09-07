@@ -1,6 +1,5 @@
-package ru.netology.diploma.activity.newa
+package ru.netology.diploma.activity.apppages
 
-import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,28 +7,23 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.*
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
-import ru.netology.diploma.R
 import ru.netology.diploma.adapter.PagingLoadStateAdapter
-import ru.netology.diploma.adapter.events.EventsAdapter
-import ru.netology.diploma.adapter.events.OnEventsInteractionListener
 import ru.netology.diploma.adapter.users.OnUsersInteractionListener
 import ru.netology.diploma.adapter.users.UsersAdapter
 import ru.netology.diploma.databinding.FragmentUsersBinding
-import ru.netology.diploma.dto.Event
 import ru.netology.diploma.dto.User
-import ru.netology.diploma.viewmodel.PostViewModel
+import ru.netology.diploma.viewmodel.UsersViewModel
 
 @AndroidEntryPoint
-class EventsFragment : Fragment() {
-    private val viewModel: PostViewModel by viewModels(ownerProducer = ::requireParentFragment)
+class UsersFragment : Fragment() {
+    private val viewModel: UsersViewModel by activityViewModels()
 
     @ExperimentalCoroutinesApi
     override fun onCreateView(
@@ -39,20 +33,25 @@ class EventsFragment : Fragment() {
     ): View {
         val binding = FragmentUsersBinding.inflate(inflater, container, false)
 
-               val adapter = EventsAdapter(object : OnEventsInteractionListener {
-                   override fun onEdit(user: Event) {
+               val adapter = UsersAdapter(object : OnUsersInteractionListener {
+                   override fun onWall(user: User) {
+                       val bundle = Bundle()
+                       bundle.putLong("user", user.id)
+                       setFragmentResult("keyWall", bundle)
+                    }
+
+                   override fun onJobs(user: User) {
+                       val bundle = Bundle()
+                       bundle.putLong("user", user.id)
+                       setFragmentResult("keyJobs", bundle)
                    }
 
-                   override fun onLike(user: Event) {
+                   override fun onEvents(user: User) {
+                       val bundle = Bundle()
+                       bundle.putLong("user", user.id)
+                       setFragmentResult("keyEvents", bundle)
                    }
 
-                   override fun onRemove(user: Event) {
-                   }
-
-
-                   override fun onShare(user: Event) {
-
-                   }
                })
 
 
@@ -66,23 +65,11 @@ class EventsFragment : Fragment() {
                binding.list.addItemDecoration(
                    DividerItemDecoration(
                        requireContext(),
-                       DividerItemDecoration.VERTICAL
+                       DividerItemDecoration.HORIZONTAL
                    )
                )
 
-               val offesetH = resources.getDimensionPixelSize(R.dimen.common_spacing)
-               binding.list.addItemDecoration(
-                   object : RecyclerView.ItemDecoration() {
-                       override fun getItemOffsets(
-                           outRect: Rect,
-                           itemPosition: Int,
-                           parent: RecyclerView
-                       ) {
-                           outRect.left += offesetH
-                           outRect.right += offesetH
-                       }
-                   }
-               )
+
 
 
                viewModel.dataState.observe(viewLifecycleOwner) { state ->
@@ -99,23 +86,22 @@ class EventsFragment : Fragment() {
                }
 
                lifecycleScope.launchWhenCreated {
-                   viewModel.cachedevents.collectLatest {
-                       Log.e("ssss", "submitData cachedevents")
+                   viewModel.cachedusers.collectLatest {
+                       Log.e("ssss", "submitData dataUsers")
                        adapter.submitData(it)
                    }
                }
 
-             /*  lifecycleScope.launchWhenCreated {
+                lifecycleScope.launchWhenCreated {
                    adapter.loadStateFlow.collectLatest { states ->
                        binding.swiperefresh.isRefreshing = states.refresh is LoadState.Loading
                    }
-               }*/
+               }
 
 
                binding.swiperefresh.setOnRefreshListener {
-                   viewModel.loadEvents()
-                   Log.e("ssss", "ssss swiperefresh loadEvents")
-
+                   viewModel.loadUsers()
+                   Log.e("ssss", "ssss swiperefresh")
                }
 
 

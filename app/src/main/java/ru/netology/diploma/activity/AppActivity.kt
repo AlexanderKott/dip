@@ -8,23 +8,28 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
+import androidx.fragment.app.add
+import androidx.fragment.app.commit
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.installations.FirebaseInstallations
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.diploma.R
-import ru.netology.diploma.activity.NewPostFragment.Companion.textArg
+import ru.netology.diploma.activity.apppages.EventsFragment
+import ru.netology.diploma.activity.apppages.JobFragment
+import ru.netology.diploma.activity.apppages.NewJobFragment
+import ru.netology.diploma.activity.apppages.PostsFragment
 import ru.netology.diploma.auth.AppAuth
 import ru.netology.diploma.viewmodel.AuthViewModel
-import ru.netology.diploma.viewmodel.PostViewModel
+import ru.netology.diploma.viewmodel.OldViewModel
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class AppActivity: AppCompatActivity (R.layout.activity_app) {
     private val viewModel: AuthViewModel by viewModels()
-    private val postViewModel: PostViewModel by viewModels()
+    private val oldViewModel: OldViewModel by viewModels()
     private lateinit var fb: FirebaseInstallations
     private lateinit var fbm: FirebaseMessaging
 
@@ -45,6 +50,11 @@ class AppActivity: AppCompatActivity (R.layout.activity_app) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        supportFragmentManager.commit {
+            setReorderingAllowed(true)
+            add<MainFragment>(R.id.fragment_container_view)
+        }
+
         intent?.let {
             if (it.action != Intent.ACTION_SEND) {
                 return@let
@@ -56,16 +66,10 @@ class AppActivity: AppCompatActivity (R.layout.activity_app) {
             }
 
             intent.removeExtra(Intent.EXTRA_TEXT)
-            findNavController(R.id.nav_host_fragment)
-                .navigate(
-                    R.id.action_feedFragment_to_newPostFragment,
-                    Bundle().apply {
-                        textArg = text
-                    }
-                )
+
         }
 
-        viewModel.data.observe(this) {
+        viewModel.authData.observe(this) {
             invalidateOptionsMenu()
         }
 
@@ -92,6 +96,69 @@ class AppActivity: AppCompatActivity (R.layout.activity_app) {
         }
 
         checkGoogleApiAvailability()
+
+
+
+        supportFragmentManager
+            .setFragmentResultListener("keyEvents", this) { _, bundle ->
+                Log.e("ssss", "supportFragmentManager key1 END")
+                supportFragmentManager.commit {
+                    setReorderingAllowed(true)
+                    replace(
+                        R.id.fragment_container_view,  EventsFragment::class.java, bundle
+                    )
+                    addToBackStack("keyEvents")
+                }
+            }
+
+        supportFragmentManager
+            .setFragmentResultListener("keyWall", this) { _, bundle ->
+                supportFragmentManager.commit {
+                    setReorderingAllowed(true)
+                    replace(
+                        R.id.fragment_container_view,  PostsFragment::class.java, bundle
+                    )
+                    addToBackStack("keyWall")
+                }
+            }
+
+        supportFragmentManager
+            .setFragmentResultListener("keyJobs", this) { _, bundle ->
+                supportFragmentManager.commit {
+                    setReorderingAllowed(true)
+                    replace(
+                        R.id.fragment_container_view,  JobFragment::class.java, bundle
+                    )
+                    addToBackStack("keyJobs")
+                }
+            }
+
+        supportFragmentManager
+            .setFragmentResultListener("keyNewJob", this) { _, bundle ->
+                supportFragmentManager.commit {
+                    setReorderingAllowed(true)
+                    replace(
+                        R.id.fragment_container_view,  NewJobFragment::class.java, bundle
+                    )
+                    addToBackStack("keyNewJob")
+                }
+            }
+
+
+        supportFragmentManager
+            .setFragmentResultListener("keyNewPost", this) { _, bundle ->
+                supportFragmentManager.commit {
+                    setReorderingAllowed(true)
+                    replace(
+                        R.id.fragment_container_view,  NewPostFragment::class.java, bundle
+                    )
+                    addToBackStack("keyNewPost")
+                }
+            }
+
+
+
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -109,25 +176,34 @@ class AppActivity: AppCompatActivity (R.layout.activity_app) {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.signin -> {
-                // TODO: just hardcode it, implementation must be in homework
-                appAuth.setAuth(5, "x-token")
-                Log.e("exc", "signin")
+                showLoginAuthDialog(Dialog.LOGIN) { login, password, _ ->
+                    appAuth.authUser(login, password){
+                        showFailDialog()
+                    }
+                }
                 true
             }
+
             R.id.signup -> {
-                // TODO: just hardcode it, implementation must be in homework
-                appAuth.setAuth(5, "x-token")
+                showLoginAuthDialog(Dialog.REGISTER) { login, password, name ->
+                    appAuth.regNewUserWithoutAvatar(login, password, name){
+                        showFailDialog()
+                    }
+                }
                 true
             }
+
             R.id.signout -> {
-                // TODO: just hardcode it, implementation must be in homework
                 appAuth.removeAuth()
-                postViewModel.refreshPosts()
+                //todo Refresh
+               /// postViewModel.refreshPosts()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
+
+
 
 
     private fun checkGoogleApiAvailability() {

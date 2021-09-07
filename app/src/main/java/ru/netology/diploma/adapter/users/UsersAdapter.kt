@@ -11,10 +11,9 @@ import ru.netology.diploma.databinding.CardUserBinding
 import ru.netology.diploma.dto.User
 
 interface OnUsersInteractionListener {
-    fun onLike(post: User) {}
-    fun onEdit(post: User) {}
-    fun onRemove(post: User) {}
-    fun onShare(post: User) {}
+    fun onWall(post: User) {}
+    fun onJobs(post: User) {}
+    fun onEvents(post: User) {}
 }
 
 class UsersAdapter(
@@ -23,7 +22,7 @@ class UsersAdapter(
 
 
     override fun getItemViewType(position: Int): Int {
-       return when (getItem(position)) {
+        return when (getItem(position)) {
             is User -> R.layout.card_user
             else -> error("unsupported type")
         }
@@ -33,18 +32,18 @@ class UsersAdapter(
         when (viewType) {
             R.layout.card_user -> {
                 val binding =
-                   CardUserBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                    CardUserBinding.inflate(LayoutInflater.from(parent.context), parent, false)
                 return UserViewHolder(binding, onUsersInteractionListener)
             }
 
-           
+
             else -> error("no such viewholder")
         }
     }
 
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (holder){
+        when (holder) {
             is UserViewHolder -> {
                 val item = getItem(position)
                 if (item != null) {
@@ -59,8 +58,6 @@ class UsersAdapter(
 }
 
 
- 
-
 class UserViewHolder(
     private val binding: CardUserBinding,
     private val onInteractionListener: OnUsersInteractionListener,
@@ -69,35 +66,29 @@ class UserViewHolder(
     fun bind(user: User) {
         binding.apply {
             userInfo.setText("${user.id}  ${user.name}")
-            Log.e("ssss", "xxxx ${user.id}  ${user.name}")
-            /*avatar.load("${BuildConfig.BASE_URL}/media/${ad.picture}")
 
-            avatar.setOnClickListener {
-                onInteractionListener.onAdClick(ad)
-            }*/
+            toEvents.setOnClickListener {
+                onInteractionListener.onEvents(user)
+            }
+
+            toWall.setOnClickListener {
+                onInteractionListener.onWall(user)
+            }
+
+            toJobs.setOnClickListener {
+                onInteractionListener.onJobs(user)
+            }
         }
     }
 }
 
-
-
-
-
-class PostDiffCallback : DiffUtil.ItemCallback<User>() {
-    override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
-        return oldItem.id == newItem.id
-    }
-
-    override fun areContentsTheSame(oldItem: User, newItem: User): Boolean {
-        return oldItem == newItem
-    }
-
-   /* override fun getChangePayload(oldItem: FeedModel, newItem: FeedModel): Any? {
-        if (newItem is PostModel) {
-            Payload( newItem.post)
+    class PostDiffCallback : DiffUtil.ItemCallback<User>() {
+        override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
+            return oldItem.id == newItem.id
         }
 
-
-    }*/
-}
+        override fun areContentsTheSame(oldItem: User, newItem: User): Boolean {
+            return oldItem == newItem
+        }
+    }
 

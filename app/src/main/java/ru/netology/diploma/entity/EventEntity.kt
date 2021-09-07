@@ -15,10 +15,10 @@ data class EventEntity(
     val attachment: Attachment?,
     val author: String?,
     val authorAvatar: String?,
-    val authorId: Int?,
+    val authorId: Int,
     val content: String?,
     val link: String?,
-    val published: Int?,
+    val published: Int,
     val speakerIds: List<String>?,
     @ColumnInfo(name = "event_type")
     val type: String?

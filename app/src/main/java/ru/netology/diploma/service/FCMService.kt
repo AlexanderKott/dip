@@ -43,6 +43,6 @@ class FCMService  : FirebaseMessagingService() {
 
 
     override fun onNewToken(token: String) {
-        authp.sendPushToken(token)
+       // authp.sendPushToken(token)
     }
 }

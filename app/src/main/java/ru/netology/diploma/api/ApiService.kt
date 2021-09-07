@@ -8,6 +8,36 @@ import ru.netology.diploma.dto.*
 
 interface ApiService {
 
+
+    @POST("my/jobs")
+    suspend fun postNewJob(@Body newJob: NewJob): Response<Unit>
+
+    @GET("my/jobs")
+    suspend fun getMyJobs(): Response<List<Job>>
+
+    @POST("posts/-555/likes")
+    suspend fun checkToken(): Response<Unit>
+
+    @Headers("Content-Type: application/x-www-form-urlencoded")
+    @POST("users/authentication")
+    suspend fun authMe (@Query("login") login: String,@Query("pass") pass: String)
+    : Response<AuthState>
+
+    @Headers("Content-Type: application/x-www-form-urlencoded")
+    @POST("users/registration")
+    suspend fun regMeWithoutAvatar (@Query("login") login: String,
+                                    @Query("pass") pass: String,
+                                    @Query("name") name: String,
+                                    )
+            : Response<AuthState>
+
+
+
+
+
+    @GET("{id}/jobs")
+    suspend fun getJobs(@Path("id") id : Long): Response<List<Job>>
+
     @GET("events")
     suspend fun getAllEvents(): Response<List<Event>>
 
@@ -31,7 +61,15 @@ interface ApiService {
         @Query("count") count: Int
     ): Response<List<Post2>>
 
+
+    @GET("{id}/wall")
+    suspend fun getWall(@Path("id") id: Long): Response<List<Post2>>
+
     //-----------------------
+
+    @GET("events/{id}")
+    suspend fun getEventById(@Path("id") id: Long): Response<Event>
+
 
 
     @POST("users/push-tokens")

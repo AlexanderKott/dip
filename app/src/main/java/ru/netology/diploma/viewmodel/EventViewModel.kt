@@ -26,74 +26,64 @@ import ru.netology.diploma.work.SavePostWorker
 import javax.inject.Inject
 import kotlin.random.Random
 
-private val empty = Post2(
- attachment= null,
- author= "",
- authorAvatar= "",
- authorId= 0,
- content= "",
- coords= "",
- id= 0,
- likeOwnerIds= null,
- likedByMe= false,
- link= "",
- mentionIds= null,
- mentionedMe= false,
- published= 0
-)
 
+
+private val noPhoto = PhotoModel()
 
 //Это вьюмодел заинжекчена без конструктора. даггер сам ее создает
 @HiltViewModel
 @ExperimentalCoroutinesApi
-class PostViewModel @Inject constructor(var repository: AppEntities ,
+class EventViewModel @Inject constructor(var repository: AppEntities ,
                                         var workManager: WorkManager,
                                         var auth: AppAuth
 ) : ViewModel() {
-    private var postAuthorId : Long = -1
 
-    val cachedposts = repository.pdata.cachedIn(viewModelScope)
-
-    val feedModels = cachedposts.map { pagingData ->
-        if (postAuthorId == -1L){
-            pagingData.map { post ->
-                    PostModel(post = post) as FeedModel
-                }
-        } else { pagingData.filter { postAuthorId == it.authorId.toLong()  }
-            .map { post ->
-                PostModel(post = post) as FeedModel
-            }
-        }
-    }
-
+    private val cachedevents = repository.edata.cachedIn(viewModelScope)
 
     private val _dataState = MutableLiveData<FeedModelState>()
     val dataState: LiveData<FeedModelState>
         get() = _dataState
 
 
-    fun getWallById(id: Long) = viewModelScope.launch {
-        postAuthorId = id
+    var authorID = 0L;
 
+
+    val feedEvents = cachedevents.map { pagingData ->
+        if (authorID == -1L){
+            pagingData.map { event ->
+                event
+            }
+        } else { pagingData.filter { authorID == it.authorId.toLong()  }
+            .map { event ->
+                event
+            }
+        }
+    }
+
+
+    fun getEventById(id: Long) = viewModelScope.launch {
         try {
             _dataState.value = FeedModelState(loading = true)
-            repository.getWallbyId(id)
+             authorID = id;
+             repository.getEventbyId(id)
             _dataState.value = FeedModelState()
-
-        } catch (e: Error404) {
-                _dataState.value = FeedModelState(empty = true)
+        }
+        catch (e: Error404) {
+            _dataState.value = FeedModelState(empty = true)
                 Log.e("OkHttpClient", "ApiError 404")
+            }
 
-        } catch (e: Exception) {
+
+        catch (e: Exception) {
             Log.e("OkHttpClient", "execption ${e.cause}  ${e.message}")
             _dataState.value = FeedModelState(error = true)
         }
     }
 
-
-    fun refreshPosts() = viewModelScope.launch {
-        getWallById(postAuthorId)
+    fun refresh (){
+        getEventById(authorID)
     }
+
 }
 
 

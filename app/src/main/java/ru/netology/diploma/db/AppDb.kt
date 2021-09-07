@@ -19,12 +19,14 @@ import ru.netology.diploma.enumeration.AttachmentType
     EventEntity::class,
     UserKeyEntry::class,
     EventKeyEntry::class,
-                     ], version = 6, exportSchema = false)
+    JobEntity::class
+                     ], version = 10, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDb : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun postDao(): PostDao
     abstract fun eventDao(): EventDao
+    abstract fun jobDao(): JobDao
 
     abstract fun postWorkDao(): PostWorkDao
     abstract fun keyPostPaginationDao(): PostPaginationKeyDao

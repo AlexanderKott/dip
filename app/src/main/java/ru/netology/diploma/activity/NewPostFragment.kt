@@ -6,8 +6,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -15,6 +15,7 @@ import ru.netology.diploma.R
 import ru.netology.diploma.databinding.FragmentNewPostBinding
 import ru.netology.diploma.util.AndroidUtils
 import ru.netology.diploma.util.StringArg
+import ru.netology.diploma.viewmodel.OldViewModel
 import ru.netology.diploma.viewmodel.PostViewModel
 
 @AndroidEntryPoint
@@ -26,9 +27,7 @@ class NewPostFragment : Fragment() {
         var Bundle.textArg: String? by StringArg
     }
 
-    private val viewModel: PostViewModel by viewModels(
-        ownerProducer = ::requireParentFragment
-    )
+    private val viewModel: OldViewModel by activityViewModels()
 
     private var fragmentBinding: FragmentNewPostBinding? = null
 
@@ -97,7 +96,6 @@ class NewPostFragment : Fragment() {
         }
 
         viewModel.postCreated.observe(viewLifecycleOwner) {
-            findNavController().navigateUp()
         }
 
         viewModel.photo.observe(viewLifecycleOwner) {

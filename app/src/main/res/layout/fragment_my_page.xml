@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scrollbars = "vertical"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/groupLogined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:constraint_referenced_ids="progressWall,nojobsL,noPostsL,progressJobs,jobLst,postLst,myPosts,myJobs,newJob,newPost,ava,username"
+            tools:visibility="gone" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/groupNotLogined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            app:constraint_referenced_ids="loginFirst"
+            tools:visibility="visible" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/groupErrorOccurred"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:constraint_referenced_ids="swiperefresh"
+            tools:visibility="gone" />
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swiperefresh"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/clickRefresh"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/click_refresh"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+
+        <TextView
+            android:id="@+id/loginFirst"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/login_first"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ProgressBar
+            android:id="@+id/progressWall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/postLst"
+            app:layout_constraintEnd_toStartOf="@+id/newPost"
+            app:layout_constraintStart_toEndOf="@+id/myPosts" />
+
+        <ProgressBar
+            android:id="@+id/progressJobs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@+id/jobLst"
+            app:layout_constraintEnd_toEndOf="@+id/jobLst"
+            app:layout_constraintStart_toStartOf="@+id/jobLst"
+            app:layout_constraintTop_toTopOf="@+id/jobLst" />
+
+        <TextView
+            android:id="@+id/myJobs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="My Jobs:"
+            android:visibility="visible"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ava" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/postLst"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintTop_toBottomOf="@+id/myPosts"
+            tools:layout_editor_absoluteX="0dp"
+            tools:listitem="@layout/card_user" />
+
+        <TextView
+            android:id="@+id/myPosts"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="64dp"
+            android:text="My posts:"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/jobLst" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/jobLst"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/myJobs"
+            tools:listitem="@layout/card_user" />
+
+        <ImageView
+            android:id="@+id/ava"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="32dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:srcCompat="@sample/posts_avatars" />
+
+        <TextView
+            android:id="@+id/username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="name"
+            app:layout_constraintStart_toEndOf="@+id/ava"
+            app:layout_constraintTop_toTopOf="@+id/ava" />
+
+        <ImageButton
+            android:id="@+id/newPost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="1dp"
+            android:src="@drawable/ic_baseline_plus_one_24"
+            app:layout_constraintBottom_toTopOf="@+id/postLst"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/nojobsL"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="no jobs"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/jobLst"
+            app:layout_constraintEnd_toEndOf="@+id/jobLst"
+            app:layout_constraintStart_toStartOf="@+id/jobLst"
+            app:layout_constraintTop_toTopOf="@+id/jobLst"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/noPostsL"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="no posts"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/postLst"
+            app:layout_constraintEnd_toEndOf="@+id/postLst"
+            app:layout_constraintStart_toStartOf="@+id/postLst"
+            app:layout_constraintTop_toTopOf="@+id/postLst"
+            tools:visibility="gone" />
+
+
+        <ImageButton
+            android:id="@+id/newJob"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_baseline_plus_one_24"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/jobLst"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="gone" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
+
+

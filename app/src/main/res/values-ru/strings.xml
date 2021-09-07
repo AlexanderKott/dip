@@ -29,4 +29,6 @@
     <string name="sign_in">Вход</string>
     <string name="sign_up">Регистрация</string>
     <string name="sign_out">Выход</string>
+    <string name="empty_records">No records</string>
+    <string name="login_first">Залогинитесь снчала, чтобы видеть Вашу страницу</string>
 </resources>

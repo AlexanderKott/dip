@@ -1,5 +1,6 @@
 package ru.netology.diploma.repository
 
+import android.content.Context
 import android.util.Log
 import androidx.paging.*
 import kotlinx.coroutines.Dispatchers
@@ -12,132 +13,248 @@ import ru.netology.diploma.adapter.users.UserRemoteMediator
 import ru.netology.diploma.api.*
 import ru.netology.diploma.db.AppDb
 import ru.netology.diploma.dto.*
-import ru.netology.diploma.entity.EventEntity
-import ru.netology.diploma.entity.PostEntity
-import ru.netology.diploma.entity.UserEntity
-import ru.netology.diploma.entity.toEntity
 import ru.netology.diploma.enumeration.AttachmentType
-import ru.netology.diploma.error.ApiError
-import ru.netology.diploma.error.AppError
-import ru.netology.diploma.error.NetworkError
-import ru.netology.diploma.error.UnknownError
 import java.io.IOException
+import ru.netology.diploma.adapter.jobs.JobsRemoteMediator
+import ru.netology.diploma.entity.*
+import ru.netology.diploma.error.*
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+
 
 class PostRepositoryImpl(
     private val base: AppDb,
-    private val api: ApiService
+    private val api: ApiService,
+    private val context: Context
 ) : AppEntities {
 
 
     @ExperimentalPagingApi
     override val pdata: Flow<PagingData<Post2>> = Pager(
-        remoteMediator = PostRemoteMediator (api, base),
-        config = PagingConfig( pageSize = 5 ,enablePlaceholders = false),
-        pagingSourceFactory =  base.postDao()::getAll
+        remoteMediator = PostRemoteMediator(api, base),
+        config = PagingConfig(pageSize = 5, enablePlaceholders = false),
+        pagingSourceFactory = base.postDao()::getAll
     ).flow.map {
         it.map(PostEntity::toDto)
     }
 
     @ExperimentalPagingApi
     override val udata: Flow<PagingData<User>> = Pager(
-        remoteMediator = UserRemoteMediator (api, base),
-        config = PagingConfig( pageSize = 5 ,enablePlaceholders = false),
-        pagingSourceFactory =  base.userDao()::getAll
+        remoteMediator = UserRemoteMediator(api, base),
+        config = PagingConfig(pageSize = 5, enablePlaceholders = false),
+        pagingSourceFactory = base.userDao()::getAll
     ).flow.map {
         it.map(UserEntity::toDto)
     }
 
     @ExperimentalPagingApi
     override val edata: Flow<PagingData<Event>> = Pager(
-        remoteMediator = EventsRemoteMediator (api, base),
-        config = PagingConfig( pageSize = 5 ,enablePlaceholders = false),
-        pagingSourceFactory =  base.eventDao()::getAll
+        remoteMediator = EventsRemoteMediator(api, base),
+        config = PagingConfig(pageSize = 5, enablePlaceholders = false),
+        pagingSourceFactory = base.eventDao()::getAll
     ).flow.map {
         it.map(EventEntity::toDto)
     }
 
 
+    @ExperimentalPagingApi
+    override val jdata: Flow<PagingData<Job>> = Pager(
+        remoteMediator = JobsRemoteMediator(api, context, base),
+        config = PagingConfig(pageSize = 5, enablePlaceholders = false),
+        pagingSourceFactory = base.jobDao()::getAll
+    ).flow.map {
+        it.map(JobEntity::toDto)
+    }
 
-    override suspend fun getAllEvents() {
-        Log.e("ssss", "getAllEvents")
-        try {
-            val response = api.getAllEvents()
+
+
+    override suspend fun authUser(login: String, pass: String, success: (id : Long, token: String) -> Unit) {
+        netRequestWrapper(object {}.javaClass.enclosingMethod.name) {
+            val response = api.authMe(login, pass)
+
             if (!response.isSuccessful) {
-                Log.e("ssss", "getAllEvents error")
+                throw ApiError(response.code(), response.message())
+            }
+            val body = response.body()
+            if (body?.token != null) {
+                success(body.id, body.token)
+            }
+        }
+    }
+
+    override suspend fun checkToken() : Boolean{
+        return try {
+            val response = api.checkToken()
+            response.code() != 405 && response.code() < 500
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    override suspend fun regNewUserWithoutAvatar(
+        login: String,
+        pass: String,
+        name: String,
+        successCase: (id : Long, token: String) -> Unit
+    ) {
+        netRequestWrapper(object{}.javaClass.enclosingMethod.name) {
+            val response = api.regMeWithoutAvatar(login, pass, name)
+            val body = response.body()
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+            if (body?.token != null) {
+                successCase(body.id, body.token)
+            }
+        }
+    }
+
+    override suspend fun getMyJobs() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getMyPosts() {
+        TODO("Not yet implemented")
+    }
+
+
+     private suspend fun netRequestWrapper(logInfo: String, requestBody : suspend ()-> Unit){
+        try {
+            requestBody()
+        } catch (e: ConnectException) {
+            Log.e("netRequest", "ConnectException  ${e.message}  ${e.cause}")
+            throw NetworkError
+        } catch (e: SocketTimeoutException) {
+                Log.e("netRequest", "SocketTimeoutException  ${e.message}  ${e.cause}")
+            throw NetworkError
+        } catch (e: ApiError) {
+            Log.e("netRequest", "$logInfo ${e.javaClass.simpleName} ${e.status} | ${e.code} | ${e.cause}")
+            throw e
+        } catch (e: Error404) {
+            Log.e("netRequest", "$logInfo ${e.javaClass.simpleName} 404 or Empty ")
+            throw e
+        } catch (e: IOException) {
+            Log.e("netRequest", "$logInfo ${e.javaClass.simpleName} Unknown NetworkError ${e.message}  ${e.cause}")
+            throw NetworkError
+        } catch (e: Exception) {
+            Log.e("netRequest", "$logInfo ${e.javaClass.simpleName} ${e.message}  ${e.cause}")
+            throw UnknownError
+        }
+    }
+
+    override suspend fun getJobsById(id: Long) {
+        netRequestWrapper(object{}.javaClass.enclosingMethod.name) {
+            val response = api.getJobs(id)
+            if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            // Log.e("ssss", "body= ${response.body()}")
 
+            if (body.isEmpty()) {
+                throw Error404
+            }
+
+            base.jobDao().insert(body.toEntity(id))
+        }
+    }
+
+    override suspend fun postNewJob(job: NewJob) {
+        netRequestWrapper(object{}.javaClass.enclosingMethod.name) {
+          api.postNewJob(job)
+        }
+    }
+
+
+    override suspend fun getEventbyId(id: Long) {
+        netRequestWrapper(object{}.javaClass.enclosingMethod.name) {
+            val response = api.getEventById(id)
+            if (!response.isSuccessful) {
+                if (response.code() == 404) {
+                    throw Error404
+                }
+                throw ApiError(response.code(), response.message())
+            }
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            base.eventDao().insert(EventEntity.fromDto(body))
+        }
+    }
+
+
+    override suspend fun getWallbyId(id: Long) {
+        netRequestWrapper(object{}.javaClass.enclosingMethod.name) {
+            val response = api.getWall(id)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+
+            if (body.isEmpty()) {
+                throw Error404
+            }
+            base.postDao().insert(body.toEntity())
+        }
+    }
+
+
+    override suspend fun getAllEvents() {
+        netRequestWrapper(object{}.javaClass.enclosingMethod.name) {
+            val response = api.getAllEvents()
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
             base.eventDao().insert(body.toEntity())
-
-        } catch (e: IOException) {
-            throw NetworkError
-        } catch (e: Exception) {
-            throw e
         }
     }
 
 
     override suspend fun getAllUsers() {
-        Log.e("ssss", "getAllUsers")
-        try {
+        netRequestWrapper(object{}.javaClass.enclosingMethod.name) {
             val response = api.getAllUsers()
             if (!response.isSuccessful) {
-                Log.e("ssss", "getAllUsers error")
                 throw ApiError(response.code(), response.message())
             }
-
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-           // Log.e("ssss", "body= ${response.body()}")
-
-          base.userDao().insert(body.toEntity())
-
-        } catch (e: IOException) {
-            throw NetworkError
-        } catch (e: Exception) {
-            throw e
+            base.userDao().insert(body.toEntity())
         }
     }
 
 
-
-    //---------------------------------------------
-    override suspend fun getAll() {
-        try {
+    override suspend fun getAllPosts() {
+        netRequestWrapper(object{}.javaClass.enclosingMethod.name) {
             val response = api.getAll()
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
-
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            Log.e("OkHttpClient", "getAll body $body")
+            if (body.isEmpty()) {
+                throw Error404
+            }
             base.postDao().insert(body.toEntity())
-        } catch (e: IOException) {
-            throw NetworkError
-        } catch (e: Exception) {
-            Log.e("OkHttpClient", "getAll Exception  ${e.message}  ${e.cause}")
-            throw UnknownError
         }
     }
 
-    override fun getNewerCount(id: Long): Flow<Int> = flow {
-      /*  while (true) {
-            delay(120_000L)
-            val response = api.getNewer(id)
-            if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
-            }
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
-            base.postDao().insert(body.toEntity())
-            emit(body.size)
-        }*/
+    //---------------- Todo: Refactor code below -------
+
+    override fun getNewerCount(id: Long): Flow<Int> = flow {
+        /*  while (true) {
+              delay(120_000L)
+              val response = api.getNewer(id)
+              if (!response.isSuccessful) {
+                  throw ApiError(response.code(), response.message())
+              }
+
+              val body = response.body() ?: throw ApiError(response.code(), response.message())
+              base.postDao().insert(body.toEntity())
+              emit(body.size)
+          }*/
         emit(0)
     }
         .catch { e -> throw AppError.from(e) }
         .flowOn(Dispatchers.Default)
+
 
     override suspend fun save(post: Post2) {
         try {
@@ -154,6 +271,9 @@ class PostRepositoryImpl(
             throw UnknownError
         }
     }
+
+
+    // ---------------
 
     override suspend fun removeById(id: Long) {
         TODO("Not yet implemented")
@@ -199,16 +319,16 @@ class PostRepositoryImpl(
     }
 
     override suspend fun saveWork(post: Post2, upload: MediaUpload?): Long {
-       /* try {
-            val entity = PostWorkEntity.fromDto(post).apply {
-                if (upload != null) {
-                    this.uri = upload.file.toUri().toString()
-                }
-            }
-            return base.postWorkDao().insert(entity)
-        } catch (e: Exception) {
-            throw UnknownError
-        }*/
+        /* try {
+             val entity = PostWorkEntity.fromDto(post).apply {
+                 if (upload != null) {
+                     this.uri = upload.file.toUri().toString()
+                 }
+             }
+             return base.postWorkDao().insert(entity)
+         } catch (e: Exception) {
+             throw UnknownError
+         }*/
         return 0
     }
 

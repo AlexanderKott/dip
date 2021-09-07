@@ -41,6 +41,7 @@ class EventsAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+
         when (viewType) {
             R.layout.card_event -> {
                 val binding =
