@@ -24,7 +24,7 @@
             tools:srcCompat="@sample/posts.json/data/authorAvatar" />
 
         <TextView
-            android:id="@+id/author"
+            android:id="@+id/cname"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/common_spacing"
@@ -48,7 +48,7 @@
             app:layout_constraintBottom_toBottomOf="@id/header"
             app:layout_constraintEnd_toStartOf="@id/menu"
             app:layout_constraintStart_toEndOf="@id/avatar"
-            app:layout_constraintTop_toBottomOf="@id/author"
+            app:layout_constraintTop_toBottomOf="@id/cname"
             tools:text="@sample/posts.json/data/published" />
 
         <com.google.android.material.button.MaterialButton

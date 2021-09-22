@@ -1,10 +1,14 @@
 package ru.netology.diploma.activity.apppages
 
+import android.content.pm.ActivityInfo
 import android.graphics.Rect
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -26,25 +30,43 @@ import ru.netology.diploma.viewmodel.JobsViewModel
 @AndroidEntryPoint
 class JobFragment : Fragment() {
     private val viewModel: JobsViewModel by activityViewModels()
+    private var _binding: FragmentJobsBinding? = null
+    private val binding get() = _binding!!
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentJobsBinding.inflate(inflater, container, false)
+        _binding = FragmentJobsBinding.inflate(inflater, container, false)
+
+        return _binding!!.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
 
-        val adapter = JobAdapter(object : OnJobsInteractionListener {
-            override fun onJob(job: Job) {
+        val adapterJ = JobAdapter(object : OnJobsInteractionListener {
+            override fun onJobClick(job: Job) {
+                Toast.makeText(requireContext(), "Click!", Toast.LENGTH_SHORT).
+                        show()
+            }
+
+            override fun onJobRemove(job: Job) {
             }
         })
 
 
-        binding.list.adapter = adapter.withLoadStateHeaderAndFooter(
-            header = PagingLoadStateAdapter(adapter::retry),
-            footer = PagingLoadStateAdapter(adapter::retry)
+        binding.jlist.adapter = adapterJ.withLoadStateHeaderAndFooter(
+            header = PagingLoadStateAdapter(adapterJ::retry),
+            footer = PagingLoadStateAdapter(adapterJ::retry)
         )
 
 
@@ -52,15 +74,9 @@ class JobFragment : Fragment() {
                 viewModel.loadJobsById(it)
         }
 
-        binding.list.addItemDecoration(
-            DividerItemDecoration(
-                requireContext(),
-                DividerItemDecoration.VERTICAL
-            )
-        )
 
         val offesetH = resources.getDimensionPixelSize(R.dimen.common_spacing)
-        binding.list.addItemDecoration(
+        binding.jlist.addItemDecoration(
             object : RecyclerView.ItemDecoration() {
                 override fun getItemOffsets(
                     outRect: Rect,
@@ -78,35 +94,50 @@ class JobFragment : Fragment() {
             binding.progress.isVisible = state.loading
             binding.swiperefresh.isRefreshing = state.refreshing
 
-            binding.emptyText.isVisible = state.empty
-
             if (state.error) {
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.retry_loading) { viewModel.refreshPosts() }
+                    .setAction(R.string.retry_loading) { viewModel.refreshJobs() }
                     .show()
             }
         }
 
+
+
         lifecycleScope.launchWhenCreated {
             viewModel.jobs.collectLatest {
-                adapter.submitData(it)
+                adapterJ.submitData(it)
             }
         }
 
         lifecycleScope.launchWhenCreated {
-             adapter.loadStateFlow.collectLatest { states ->
+             adapterJ.loadStateFlow.collectLatest { states ->
                  binding.swiperefresh.isRefreshing = states.refresh is LoadState.Loading
              }
          }
 
 
         binding.swiperefresh.setOnRefreshListener {
-            viewModel.refreshPosts()
+            viewModel.refreshJobs()
         }
 
-        binding.fab.setOnClickListener {
+
+
+
+        adapterJ.addLoadStateListener { loadState ->
+            if (loadState.refresh.endOfPaginationReached) {
+                if (adapterJ.itemCount == 0) {
+                    binding.jlist.visibility = View.INVISIBLE
+                    _binding?.emptyText?.isVisible =  true
+                } else {
+                    binding.jlist.visibility = View.VISIBLE
+                    _binding?.emptyText?.isVisible = false
+                }
+
+
+
+            }
         }
 
-        return binding.root
+
     }
 }

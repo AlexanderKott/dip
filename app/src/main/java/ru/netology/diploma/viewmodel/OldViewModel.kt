@@ -14,7 +14,6 @@ import ru.netology.diploma.auth.AppAuth
 import ru.netology.diploma.dto.MediaUpload
 import ru.netology.diploma.dto.Post2
 import ru.netology.diploma.error.ApiError
-import ru.netology.diploma.error.Error404
 import ru.netology.diploma.model.*
 import ru.netology.diploma.repository.AppEntities
 import ru.netology.diploma.util.SingleLiveEvent
@@ -136,12 +135,6 @@ class OldViewModel @Inject constructor(var repository: AppEntities ,
             }
             _dataState.value = FeedModelState()
         }
-        catch (e: Error404) {
-            _dataState.value = FeedModelState(empty = true)
-                Log.e("OkHttpClient", "ApiError 404")
-            }
-
-
         catch (e: Exception) {
             Log.e("OkHttpClient", "execption ${e.cause}  ${e.message}")
             _dataState.value = FeedModelState(error = true)

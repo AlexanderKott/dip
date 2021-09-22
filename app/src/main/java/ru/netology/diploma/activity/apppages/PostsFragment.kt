@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -30,15 +31,21 @@ import ru.netology.diploma.viewmodel.PostViewModel
 @AndroidEntryPoint
 class PostsFragment : Fragment() {
     private val viewModel: PostViewModel by activityViewModels()
-
+    private var _binding: FragmentPostsBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentPostsBinding.inflate(inflater, container, false)
+        _binding = FragmentPostsBinding.inflate(inflater, container, false)
+        return _binding!!.root
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val adapter = PostsAdapter(object : OnInteractionListener {
             override fun onEdit(post: Post2) {
@@ -69,7 +76,7 @@ class PostsFragment : Fragment() {
         })
 
 
-        binding.list.adapter = adapter.withLoadStateHeaderAndFooter(
+        binding.plist.adapter = adapter.withLoadStateHeaderAndFooter(
             header = PagingLoadStateAdapter(adapter::retry),
             footer = PagingLoadStateAdapter(adapter::retry)
         )
@@ -79,7 +86,7 @@ class PostsFragment : Fragment() {
                 viewModel.getWallById(it)
         }
 
-        binding.list.addItemDecoration(
+        binding.plist.addItemDecoration(
             DividerItemDecoration(
                 requireContext(),
                 DividerItemDecoration.VERTICAL
@@ -87,7 +94,7 @@ class PostsFragment : Fragment() {
         )
 
         val offesetH = resources.getDimensionPixelSize(R.dimen.common_spacing)
-        binding.list.addItemDecoration(
+        binding.plist.addItemDecoration(
             object : RecyclerView.ItemDecoration() {
                 override fun getItemOffsets(
                     outRect: Rect,
@@ -105,8 +112,6 @@ class PostsFragment : Fragment() {
             binding.progress.isVisible = state.loading
             binding.swiperefresh.isRefreshing = state.refreshing
 
-            binding.emptyText.isVisible = state.empty
-
             if (state.error) {
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
                     .setAction(R.string.retry_loading) { viewModel.refreshPosts() }
@@ -117,7 +122,6 @@ class PostsFragment : Fragment() {
         lifecycleScope.launchWhenCreated {
             viewModel.feedModels.collectLatest {
                 adapter.submitData(it)
-                Log.e("OkHttpClient", "submitData posts")
             }
         }
 
@@ -127,14 +131,19 @@ class PostsFragment : Fragment() {
              }
          }
 
+        adapter.addLoadStateListener { loadState ->
+            if (loadState.refresh.endOfPaginationReached) {
+                _binding?.emptyText?.isVisible = adapter.itemCount == 0
+            }
+        }
+
 
         binding.swiperefresh.setOnRefreshListener {
             viewModel.refreshPosts()
         }
 
-        binding.fab.setOnClickListener {
-        }
 
-        return binding.root
+
+
     }
 }

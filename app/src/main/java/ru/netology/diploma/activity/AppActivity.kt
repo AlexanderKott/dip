@@ -1,19 +1,13 @@
 package ru.netology.diploma.activity
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.add
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
-import com.google.firebase.installations.FirebaseInstallations
-import com.google.firebase.messaging.FirebaseMessaging
+import androidx.fragment.app.replace
 import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.diploma.R
 import ru.netology.diploma.activity.apppages.EventsFragment
@@ -22,51 +16,36 @@ import ru.netology.diploma.activity.apppages.NewJobFragment
 import ru.netology.diploma.activity.apppages.PostsFragment
 import ru.netology.diploma.auth.AppAuth
 import ru.netology.diploma.viewmodel.AuthViewModel
-import ru.netology.diploma.viewmodel.OldViewModel
 import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class AppActivity: AppCompatActivity (R.layout.activity_app) {
+class AppActivity : AppCompatActivity(R.layout.activity_app) {
     private val viewModel: AuthViewModel by viewModels()
-    private val oldViewModel: OldViewModel by viewModels()
-    private lateinit var fb: FirebaseInstallations
-    private lateinit var fbm: FirebaseMessaging
-
-    @Inject lateinit var appAuth : AppAuth
-    @Inject lateinit var gava: GoogleApiAvailability
 
     @Inject
-    fun setFirebaseInstallations(f: FirebaseInstallations){
-        fb = f
-    }
+    lateinit var appAuth: AppAuth
 
-    @Inject
-    fun setFirebaseMessaging(f: FirebaseMessaging){
-        fbm = f
+    override fun  onBackPressed(){
+        setTitle(R.string.app_name)
+        supportActionBar?.setDisplayHomeAsUpEnabled(false)
+        super.onBackPressed()
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setSupportActionBar((findViewById(R.id.toolbar)))
 
-        supportFragmentManager.commit {
-            setReorderingAllowed(true)
-            add<MainFragment>(R.id.fragment_container_view)
-        }
-
-        intent?.let {
-            if (it.action != Intent.ACTION_SEND) {
-                return@let
+        if (savedInstanceState == null) {
+            supportFragmentManager.commit {
+                setReorderingAllowed(true)
+                replace<LoadingFragment>(R.id.fragment_container_view, "loading")
             }
-
-            val text = it.getStringExtra(Intent.EXTRA_TEXT)
-            if (text?.isNotBlank() != true) {
-                return@let
+        } else {
+            supportFragmentManager.commit {
+                setReorderingAllowed(true)
+                replace<MainFragment>(R.id.fragment_container_view)
             }
-
-            intent.removeExtra(Intent.EXTRA_TEXT)
-
         }
 
         viewModel.authData.observe(this) {
@@ -74,91 +53,45 @@ class AppActivity: AppCompatActivity (R.layout.activity_app) {
         }
 
 
-        fb.id.addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                println("some stuff happened: ${task.exception}")
-                return@addOnCompleteListener
+        with(supportFragmentManager) {
+            setFragmentResultListener("keyMainFragment", this@AppActivity) { _, bundle ->
+                replaceFragment(MainFragment::class.java, bundle)
             }
 
-            val token = task.result
-            println(token)
+            setFragmentResultListener("keyEvents", this@AppActivity) { _, bundle ->
+                replaceFragment(EventsFragment::class.java, bundle)
+            }
+
+            setFragmentResultListener("keyWall", this@AppActivity) { _, bundle ->
+                replaceFragment(PostsFragment::class.java, bundle)
+            }
+
+            setFragmentResultListener("keyJobs", this@AppActivity) { _, bundle ->
+                replaceFragment(JobFragment::class.java, bundle)
+            }
+
+            setFragmentResultListener("keyNewJob", this@AppActivity) { _, bundle ->
+                replaceFragment(NewJobFragment::class.java, bundle)
+            }
+
+            setFragmentResultListener("keyNewPost", this@AppActivity) { _, bundle ->
+                replaceFragment(NewPostFragment::class.java, bundle)
+            }
         }
 
+    }
 
-        fbm.token.addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                println("some stuff happened: ${task.exception}")
-                return@addOnCompleteListener
-            }
-
-            val token = task.result
-            println(token)
+    private fun replaceFragment(
+        java: Class<out Fragment>,
+        bundle: Bundle
+    ) {
+        supportFragmentManager.commit {
+            setReorderingAllowed(true)
+            replace(
+                R.id.fragment_container_view, java, bundle
+            )
+            addToBackStack(java.simpleName)
         }
-
-        checkGoogleApiAvailability()
-
-
-
-        supportFragmentManager
-            .setFragmentResultListener("keyEvents", this) { _, bundle ->
-                Log.e("ssss", "supportFragmentManager key1 END")
-                supportFragmentManager.commit {
-                    setReorderingAllowed(true)
-                    replace(
-                        R.id.fragment_container_view,  EventsFragment::class.java, bundle
-                    )
-                    addToBackStack("keyEvents")
-                }
-            }
-
-        supportFragmentManager
-            .setFragmentResultListener("keyWall", this) { _, bundle ->
-                supportFragmentManager.commit {
-                    setReorderingAllowed(true)
-                    replace(
-                        R.id.fragment_container_view,  PostsFragment::class.java, bundle
-                    )
-                    addToBackStack("keyWall")
-                }
-            }
-
-        supportFragmentManager
-            .setFragmentResultListener("keyJobs", this) { _, bundle ->
-                supportFragmentManager.commit {
-                    setReorderingAllowed(true)
-                    replace(
-                        R.id.fragment_container_view,  JobFragment::class.java, bundle
-                    )
-                    addToBackStack("keyJobs")
-                }
-            }
-
-        supportFragmentManager
-            .setFragmentResultListener("keyNewJob", this) { _, bundle ->
-                supportFragmentManager.commit {
-                    setReorderingAllowed(true)
-                    replace(
-                        R.id.fragment_container_view,  NewJobFragment::class.java, bundle
-                    )
-                    addToBackStack("keyNewJob")
-                }
-            }
-
-
-        supportFragmentManager
-            .setFragmentResultListener("keyNewPost", this) { _, bundle ->
-                supportFragmentManager.commit {
-                    setReorderingAllowed(true)
-                    replace(
-                        R.id.fragment_container_view,  NewPostFragment::class.java, bundle
-                    )
-                    addToBackStack("keyNewPost")
-                }
-            }
-
-
-
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -172,12 +105,16 @@ class AppActivity: AppCompatActivity (R.layout.activity_app) {
     }
 
 
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            android.R.id.home ->{
+                    onBackPressed()
+                  true
+         }
+
             R.id.signin -> {
                 showLoginAuthDialog(Dialog.LOGIN) { login, password, _ ->
-                    appAuth.authUser(login, password){
+                    appAuth.authUser(login, password) {
                         showFailDialog()
                     }
                 }
@@ -186,7 +123,7 @@ class AppActivity: AppCompatActivity (R.layout.activity_app) {
 
             R.id.signup -> {
                 showLoginAuthDialog(Dialog.REGISTER) { login, password, name ->
-                    appAuth.regNewUserWithoutAvatar(login, password, name){
+                    appAuth.regNewUserWithoutAvatar(login, password, name) {
                         showFailDialog()
                     }
                 }
@@ -196,28 +133,11 @@ class AppActivity: AppCompatActivity (R.layout.activity_app) {
             R.id.signout -> {
                 appAuth.removeAuth()
                 //todo Refresh
-               /// postViewModel.refreshPosts()
+                /// postViewModel.refreshPosts()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
-
-
-
-
-    private fun checkGoogleApiAvailability() {
-        with(gava) {
-            val code = isGooglePlayServicesAvailable(this@AppActivity)
-            if (code == ConnectionResult.SUCCESS) {
-                return@with
-            }
-            if (isUserResolvableError(code)) {
-                getErrorDialog(this@AppActivity, code, 9000).show()
-                return
-            }
-            Toast.makeText(this@AppActivity, R.string.google_play_unavailable, Toast.LENGTH_LONG)
-                .show()
-        }
-    }
 }
+

@@ -15,7 +15,7 @@
     <string name="add_post">Add post</string>
     <string name="retry_loading">Retry</string>
     <string name="empty_posts">There are no posts.</string>
-    <string name="error_loading">Error loading data</string>
+    <string name="error_loading">&#10060; Error loading data</string>
     <string name="save">Save</string>
     <string name="google_play_unavailable">Google Api Unavailable</string>
     <string name="notification_user_liked">User %1$s liked %2$s\'s post</string>
@@ -24,7 +24,7 @@
     <string name="description_select_photo">Select photo</string>
     <string name="description_take_photo">Take photo</string>
     <string name="description_photo">Photo</string>
-    <string name="remove">Remove</string>
+    <string name="remove">&#10060; Remove</string>
     <string name="sign_in">Sign In</string>
     <string name="sign_up">Sign Up</string>
     <string name="sign_out">Sign Out</string>
@@ -33,6 +33,10 @@
     <string name="tab_text_3">Events</string>
     <string name="empty_records">No records</string>
     <string name="tab_text_0">My page</string>
-    <string name="login_first">Залогинитесь снчала, \nчтобы видеть Вашу страницу</string>
-    <string name="click_refresh">Произошла ошибка. Потяните вниз чтобы обновить страницу</string>
+    <string name="login_first">&#128221; To see your page \n login first</string>
+    <string name="click_refresh">Error occured. Pull the page down to refresh</string>
+    <string name="error_occured">Error occured during data fetching</string>
+    <string name="seeEvents"><u>see event </u></string>
+    <string name="error_dialog">Error</string>
+    <string name="error_dialog_text">Произошла ошибка :(</string>
 </resources>

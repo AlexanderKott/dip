@@ -16,6 +16,7 @@ import ru.netology.diploma.auth.AppAuth
 import ru.netology.diploma.model.FeedModel
 import ru.netology.diploma.model.FeedModelState
 import ru.netology.diploma.model.PostModel
+import ru.netology.diploma.model.SingleLiveEvent
 import ru.netology.diploma.repository.AppEntities
 import javax.inject.Inject
 
@@ -36,13 +37,9 @@ class PostAllViewModel @Inject constructor(var repository: AppEntities ,
         }
 
 
-    private val _dataState = MutableLiveData<FeedModelState>()
-    val dataState: LiveData<FeedModelState>
+    private val _dataState = SingleLiveEvent<FeedModelState>()
+    val dataState: SingleLiveEvent<FeedModelState>
         get() = _dataState
-
-    init {
-        loadPosts()
-    }
 
 
     fun loadPosts() = viewModelScope.launch {

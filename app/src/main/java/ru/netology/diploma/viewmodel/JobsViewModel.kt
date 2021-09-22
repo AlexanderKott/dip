@@ -15,8 +15,8 @@ import kotlinx.coroutines.launch
 import ru.netology.diploma.auth.AppAuth
 import ru.netology.diploma.dto.NewJob
 import ru.netology.diploma.error.ApiError
-import ru.netology.diploma.error.Error404
 import ru.netology.diploma.model.FeedModelState
+import ru.netology.diploma.model.SingleLiveEvent
 import ru.netology.diploma.repository.AppEntities
 import javax.inject.Inject
 
@@ -31,22 +31,21 @@ class JobsViewModel @Inject constructor(
     private val cachedjobs = repository.jdata.cachedIn(viewModelScope)
 
 
-    private val _dataState = MutableLiveData<FeedModelState>()
-    val dataState: LiveData<FeedModelState>
+    private val _dataState = SingleLiveEvent<FeedModelState>()
+    val dataState: SingleLiveEvent<FeedModelState>
         get() = _dataState
 
     private var usedId = 0L
 
     val jobs = cachedjobs.map { pagingData ->
         pagingData.filter { job ->
-
-
+            Log.e("ssss", "job id= ${job.id}")
             job.authorId == usedId
         }
     }
 
 
-    fun refreshPosts() {
+    fun refreshJobs() {
         loadJobsById(usedId)
     }
 
@@ -56,14 +55,7 @@ class JobsViewModel @Inject constructor(
             usedId = id
             repository.getJobsById(id)
             _dataState.value = FeedModelState()
-        } catch (e: Error404) {
-            _dataState.value = FeedModelState(empty = true)
-            Log.e("OkHttpClient", "Error404")
-        } catch (e: ApiError) {
-            _dataState.value = FeedModelState(error = true)
-            Log.e("ssss", "loadJobsById ApiError ${e.code} ${e.message}")
-
-        } catch (e: Exception) {
+        }  catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)
             Log.e(
                 "ssss",

@@ -13,5 +13,5 @@ data class Post2(
     val link: String?,
     val mentionIds: List<String>?,
     val mentionedMe: Boolean,
-    val published: Int
+    val published: Long
 )

@@ -23,6 +23,7 @@ import ru.netology.diploma.adapter.posts.OnInteractionListener
 import ru.netology.diploma.adapter.PagingLoadStateAdapter
 import ru.netology.diploma.adapter.posts.PostsAdapter
 import ru.netology.diploma.databinding.FragmentPostsBinding
+import ru.netology.diploma.databinding.FragmentUsersBinding
 import ru.netology.diploma.dto.Post2
 import ru.netology.diploma.model.AdModel
 import ru.netology.diploma.viewmodel.PostAllViewModel
@@ -30,15 +31,19 @@ import ru.netology.diploma.viewmodel.PostAllViewModel
 @AndroidEntryPoint
 class PostsAllFragment : Fragment() {
     private val viewModel: PostAllViewModel by activityViewModels()
-
+    private var _binding: FragmentPostsBinding? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentPostsBinding.inflate(inflater, container, false)
+        _binding = FragmentPostsBinding.inflate(inflater, container, false)
+        return _binding!!.root
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+            super.onViewCreated(view, savedInstanceState)
 
         val adapter = PostsAdapter(object : OnInteractionListener {
             override fun onEdit(post: Post2) {
@@ -68,22 +73,22 @@ class PostsAllFragment : Fragment() {
         })
 
 
-        binding.list.adapter = adapter.withLoadStateHeaderAndFooter(
+        _binding?.plist?.adapter = adapter.withLoadStateHeaderAndFooter(
             header = PagingLoadStateAdapter(adapter::retry),
             footer = PagingLoadStateAdapter(adapter::retry)
         )
 
 
 
-        binding.list.addItemDecoration(
+      /*  _binding?.list?.addItemDecoration(
             DividerItemDecoration(
                 requireContext(),
                 DividerItemDecoration.VERTICAL
             )
-        )
+        )*/
 
         val offesetH = resources.getDimensionPixelSize(R.dimen.common_spacing)
-        binding.list.addItemDecoration(
+        _binding?.plist?.addItemDecoration(
             object : RecyclerView.ItemDecoration() {
                 override fun getItemOffsets(
                     outRect: Rect,
@@ -98,10 +103,10 @@ class PostsAllFragment : Fragment() {
 
 
         viewModel.dataState.observe(viewLifecycleOwner) { state ->
-            binding.progress.isVisible = state.loading
-            binding.swiperefresh.isRefreshing = state.refreshing
+            _binding?.progress?.isVisible = state.loading
+            _binding?.swiperefresh?.isRefreshing = state.refreshing
             if (state.error) {
-                Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
+                Snackbar.make(_binding!!.root, R.string.error_loading, Snackbar.LENGTH_LONG)
                     .setAction(R.string.retry_loading) { viewModel.loadPosts() }
                     .show()
             }
@@ -110,24 +115,32 @@ class PostsAllFragment : Fragment() {
         lifecycleScope.launchWhenCreated {
             viewModel.feedModels.collectLatest {
                 adapter.submitData(it)
-                Log.e("OkHttpClient", "submitData posts")
             }
         }
 
         lifecycleScope.launchWhenCreated {
              adapter.loadStateFlow.collectLatest { states ->
-                 binding.swiperefresh.isRefreshing = states.refresh is LoadState.Loading
+                 _binding?.swiperefresh?.isRefreshing = states.refresh is LoadState.Loading
+                 _binding?.errorOccured?.isVisible = states.refresh is LoadState.Error
              }
          }
 
 
-        binding.swiperefresh.setOnRefreshListener {
+        _binding?.swiperefresh?.setOnRefreshListener {
             viewModel.refreshPosts()
         }
 
-        binding.fab.setOnClickListener {
+        adapter.addLoadStateListener { loadState ->
+            if (loadState.refresh.endOfPaginationReached) {
+                _binding?.emptyText?.isVisible = adapter.itemCount == 0
+            }
         }
 
-        return binding.root
+
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

@@ -8,7 +8,7 @@ data class Event(
     val content: String?,
     val id: Int,
     val link: String?,
-    val published: Int,
+    val published: Long,
     val speakerIds: List<String>?,
     val type: String?
 )

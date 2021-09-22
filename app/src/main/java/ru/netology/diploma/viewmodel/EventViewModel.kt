@@ -1,31 +1,17 @@
 package ru.netology.diploma.viewmodel
 
-import android.net.Uri
 import android.util.Log
-import androidx.core.net.toFile
 import androidx.lifecycle.*
 import androidx.paging.*
 import androidx.work.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.diploma.auth.AppAuth
-import ru.netology.diploma.dto.MediaUpload
-import ru.netology.diploma.dto.Post
-import ru.netology.diploma.dto.Post2
-import ru.netology.diploma.error.ApiError
-import ru.netology.diploma.error.Error404
 import ru.netology.diploma.model.*
 import ru.netology.diploma.repository.AppEntities
-import ru.netology.diploma.repository.PostRepository
-import ru.netology.diploma.util.SingleLiveEvent
-import ru.netology.diploma.work.SavePostWorker
 import javax.inject.Inject
-import kotlin.random.Random
-
 
 
 private val noPhoto = PhotoModel()
@@ -40,8 +26,8 @@ class EventViewModel @Inject constructor(var repository: AppEntities ,
 
     private val cachedevents = repository.edata.cachedIn(viewModelScope)
 
-    private val _dataState = MutableLiveData<FeedModelState>()
-    val dataState: LiveData<FeedModelState>
+    private val _dataState = SingleLiveEvent<FeedModelState>()
+    val dataState: SingleLiveEvent<FeedModelState>
         get() = _dataState
 
 
@@ -68,11 +54,6 @@ class EventViewModel @Inject constructor(var repository: AppEntities ,
              repository.getEventbyId(id)
             _dataState.value = FeedModelState()
         }
-        catch (e: Error404) {
-            _dataState.value = FeedModelState(empty = true)
-                Log.e("OkHttpClient", "ApiError 404")
-            }
-
 
         catch (e: Exception) {
             Log.e("OkHttpClient", "execption ${e.cause}  ${e.message}")
@@ -80,7 +61,7 @@ class EventViewModel @Inject constructor(var repository: AppEntities ,
         }
     }
 
-    fun refresh (){
+    fun refreshEvents (){
         getEventById(authorID)
     }
 

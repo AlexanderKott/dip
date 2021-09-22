@@ -116,8 +116,8 @@ private fun checkField(
 fun Activity.showFailDialog() {
     runOnUiThread{
     AlertDialog.Builder(this)
-        .setTitle("Неудача")
-        .setMessage("Вход не удался :( ")
+        .setTitle(R.string.error_dialog)
+        .setMessage(R.string.error_dialog_text)
         .setPositiveButton(
             android.R.string.ok
         ) { dialog, which ->

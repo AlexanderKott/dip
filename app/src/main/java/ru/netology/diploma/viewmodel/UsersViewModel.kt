@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import ru.netology.diploma.auth.AppAuth
 import ru.netology.diploma.error.ApiError
 import ru.netology.diploma.model.FeedModelState
+import ru.netology.diploma.model.SingleLiveEvent
 import ru.netology.diploma.repository.AppEntities
 import javax.inject.Inject
 
@@ -25,15 +26,9 @@ class UsersViewModel @Inject constructor(var repository: AppEntities,
 ) : ViewModel() {
     val cachedusers = repository.udata.cachedIn(viewModelScope)
 
-    private val _dataState = MutableLiveData<FeedModelState>()
-    val dataState: LiveData<FeedModelState>
+    private val _dataState = SingleLiveEvent<FeedModelState>()
+    val dataState: SingleLiveEvent<FeedModelState>
         get() = _dataState
-
-
-    init {
-        loadUsers()
-    }
-
 
     fun loadUsers() = viewModelScope.launch {
         try {
@@ -47,7 +42,7 @@ class UsersViewModel @Inject constructor(var repository: AppEntities,
 
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)
-            Log.e("ssss", "loadUsers Exception= ${e.message}  ${e.cause} ${e.stackTrace.toString()} ")
+            Log.e("ssss", "loadUsers Exception=   ${e.javaClass.simpleName} ${e.message}  ${e.cause} ${e.stackTrace.toString()} ")
         }
     }
 

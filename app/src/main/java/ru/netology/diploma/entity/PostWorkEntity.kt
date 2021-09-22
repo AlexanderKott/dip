@@ -20,7 +20,7 @@ data class PostWorkEntity(
     val link: String?,
     val mentionIds: List<String>?,
     val mentionedMe: Boolean,
-    val published: Int,
+    val published: Long,
     @Embedded
     var attachment: AttachmentEmbeddable?,
 ) {

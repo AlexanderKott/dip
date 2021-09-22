@@ -1,5 +1,6 @@
 package ru.netology.diploma.dao
 
+import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.*
 import ru.netology.diploma.entity.PostEntity
@@ -9,7 +10,13 @@ import ru.netology.diploma.enumeration.AttachmentType
 @Dao
 interface UserDao {
     @Query("SELECT * FROM UserEntity")
-      fun getAll(): PagingSource<Int, UserEntity>
+    fun getAll(): PagingSource<Int, UserEntity>
+
+    @Query("SELECT * FROM UserEntity WHERE id = :id")
+      fun getMyInfo(id: Long): LiveData<List<UserEntity>>
+
+    @Query("SELECT * FROM UserEntity")
+    fun getAllOffline(): List<UserEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(user: List<UserEntity>)

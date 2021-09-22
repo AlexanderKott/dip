@@ -2,9 +2,11 @@ package ru.netology.diploma.repository
 
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.paging.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.diploma.adapter.events.EventsRemoteMediator
@@ -16,6 +18,7 @@ import ru.netology.diploma.dto.*
 import ru.netology.diploma.enumeration.AttachmentType
 import java.io.IOException
 import ru.netology.diploma.adapter.jobs.JobsRemoteMediator
+import ru.netology.diploma.auth.AppAuth
 import ru.netology.diploma.entity.*
 import ru.netology.diploma.error.*
 import java.net.ConnectException
@@ -28,10 +31,11 @@ class PostRepositoryImpl(
     private val context: Context
 ) : AppEntities {
 
+  private val prefs = context.getSharedPreferences("MainViewPager", Context.MODE_PRIVATE)
 
     @ExperimentalPagingApi
     override val pdata: Flow<PagingData<Post2>> = Pager(
-        remoteMediator = PostRemoteMediator(api, base),
+        remoteMediator = PostRemoteMediator(api, base, this),
         config = PagingConfig(pageSize = 5, enablePlaceholders = false),
         pagingSourceFactory = base.postDao()::getAll
     ).flow.map {
@@ -40,7 +44,7 @@ class PostRepositoryImpl(
 
     @ExperimentalPagingApi
     override val udata: Flow<PagingData<User>> = Pager(
-        remoteMediator = UserRemoteMediator(api, base),
+        remoteMediator = UserRemoteMediator(api, base,this),
         config = PagingConfig(pageSize = 5, enablePlaceholders = false),
         pagingSourceFactory = base.userDao()::getAll
     ).flow.map {
@@ -49,7 +53,7 @@ class PostRepositoryImpl(
 
     @ExperimentalPagingApi
     override val edata: Flow<PagingData<Event>> = Pager(
-        remoteMediator = EventsRemoteMediator(api, base),
+        remoteMediator = EventsRemoteMediator(api, base, this),
         config = PagingConfig(pageSize = 5, enablePlaceholders = false),
         pagingSourceFactory = base.eventDao()::getAll
     ).flow.map {
@@ -59,16 +63,43 @@ class PostRepositoryImpl(
 
     @ExperimentalPagingApi
     override val jdata: Flow<PagingData<Job>> = Pager(
-        remoteMediator = JobsRemoteMediator(api, context, base),
+        remoteMediator = JobsRemoteMediator(api, context, base, this),
         config = PagingConfig(pageSize = 5, enablePlaceholders = false),
         pagingSourceFactory = base.jobDao()::getAll
     ).flow.map {
         it.map(JobEntity::toDto)
     }
 
+    override fun getUser(id : Long): LiveData<List<UserEntity>>{
+       return base.userDao().getMyInfo(id)
+    }
+
+    override suspend fun checkConnection() : AppNetState  = withContext(Dispatchers.IO){
+          if  (checkInternetConnection(context)){
+              if (checkServerAvalable()) {
+                  return@withContext AppNetState.CONNECTION_ESTABLISHED
+              } else {
+                  return@withContext AppNetState.NO_SERVER_CONNECTION
+              }
+          } else {
+              return@withContext AppNetState.NO_INTERNET
+          }
+    }
+
+    override fun savePageToPrefs(position: Int) {
+        with(prefs.edit()) {
+            putInt("last", position)
+            apply()
+        }
+    }
+
+    override fun getSavedPage(): Int {
+        return prefs.getInt("last", 0)
+    }
 
 
-    override suspend fun authUser(login: String, pass: String, success: (id : Long, token: String) -> Unit) {
+
+    override suspend fun authUser(login: String, pass: String, successCallBack: (id : Long, token: String) -> Unit) {
         netRequestWrapper(object {}.javaClass.enclosingMethod.name) {
             val response = api.authMe(login, pass)
 
@@ -77,7 +108,7 @@ class PostRepositoryImpl(
             }
             val body = response.body()
             if (body?.token != null) {
-                success(body.id, body.token)
+                successCallBack(body.id, body.token)
             }
         }
     }
@@ -122,16 +153,13 @@ class PostRepositoryImpl(
         try {
             requestBody()
         } catch (e: ConnectException) {
-            Log.e("netRequest", "ConnectException  ${e.message}  ${e.cause}")
+            Log.e("netRequest", "$logInfo ${e.javaClass.simpleName}   ${e.message}  ${e.cause}")
             throw NetworkError
         } catch (e: SocketTimeoutException) {
-                Log.e("netRequest", "SocketTimeoutException  ${e.message}  ${e.cause}")
+                Log.e("netRequest", "$logInfo ${e.javaClass.simpleName}  ${e.message}  ${e.cause}")
             throw NetworkError
         } catch (e: ApiError) {
             Log.e("netRequest", "$logInfo ${e.javaClass.simpleName} ${e.status} | ${e.code} | ${e.cause}")
-            throw e
-        } catch (e: Error404) {
-            Log.e("netRequest", "$logInfo ${e.javaClass.simpleName} 404 or Empty ")
             throw e
         } catch (e: IOException) {
             Log.e("netRequest", "$logInfo ${e.javaClass.simpleName} Unknown NetworkError ${e.message}  ${e.cause}")
@@ -150,10 +178,7 @@ class PostRepositoryImpl(
             }
 
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-
-            if (body.isEmpty()) {
-                throw Error404
-            }
+            Log.e("ssss", "body.isEmpty ${body.isEmpty()}")
 
             base.jobDao().insert(body.toEntity(id))
         }
@@ -170,9 +195,8 @@ class PostRepositoryImpl(
         netRequestWrapper(object{}.javaClass.enclosingMethod.name) {
             val response = api.getEventById(id)
             if (!response.isSuccessful) {
-                if (response.code() == 404) {
-                    throw Error404
-                }
+              //  if (response.code() == 404) {
+
                 throw ApiError(response.code(), response.message())
             }
             val body = response.body() ?: throw ApiError(response.code(), response.message())
@@ -189,9 +213,7 @@ class PostRepositoryImpl(
             }
             val body = response.body() ?: throw ApiError(response.code(), response.message())
 
-            if (body.isEmpty()) {
-                throw Error404
-            }
+
             base.postDao().insert(body.toEntity())
         }
     }
@@ -204,6 +226,7 @@ class PostRepositoryImpl(
                 throw ApiError(response.code(), response.message())
             }
             val body = response.body() ?: throw ApiError(response.code(), response.message())
+
             base.eventDao().insert(body.toEntity())
         }
     }
@@ -228,9 +251,7 @@ class PostRepositoryImpl(
                 throw ApiError(response.code(), response.message())
             }
             val body = response.body() ?: throw ApiError(response.code(), response.message())
-            if (body.isEmpty()) {
-                throw Error404
-            }
+
             base.postDao().insert(body.toEntity())
         }
     }

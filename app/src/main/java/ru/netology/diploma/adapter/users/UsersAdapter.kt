@@ -6,9 +6,11 @@ import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import ru.netology.diploma.BuildConfig
 import ru.netology.diploma.R
 import ru.netology.diploma.databinding.CardUserBinding
 import ru.netology.diploma.dto.User
+import ru.netology.diploma.view.loadCircleCrop
 
 interface OnUsersInteractionListener {
     fun onWall(post: User) {}
@@ -65,7 +67,9 @@ class UserViewHolder(
 
     fun bind(user: User) {
         binding.apply {
-            userInfo.setText("${user.id}  ${user.name}")
+            userInfo.text = user.name
+            userid.text = "#${user.id}"
+            avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${user.avatar}")
 
             toEvents.setOnClickListener {
                 onInteractionListener.onEvents(user)

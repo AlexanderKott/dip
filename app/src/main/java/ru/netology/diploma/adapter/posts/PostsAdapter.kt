@@ -21,6 +21,8 @@ import ru.netology.diploma.model.FeedModel
 import ru.netology.diploma.model.PostModel
 import ru.netology.diploma.view.load
 import ru.netology.diploma.view.loadCircleCrop
+import java.text.SimpleDateFormat
+import java.util.*
 
 interface OnInteractionListener {
     fun onLike(post: Post2) {}
@@ -77,6 +79,12 @@ class PostsAdapter(
 
 data class StateX(val id :Long, val like :Boolean)
 
+fun convertLongToTime(time: Long): String {
+    val date = Date(time)
+    val format = SimpleDateFormat("yyyy.MM.dd HH:mm")
+    return format.format(date)
+}
+
 class PostViewHolder(
     private val binding: CardPostBinding,
     private val onInteractionListener: OnInteractionListener,
@@ -85,7 +93,7 @@ class PostViewHolder(
     fun bind(post: Post2) {
         binding.apply {
             author.text = post.author
-            published.text = post.published.toString()
+            published.text = convertLongToTime(post.published)
             content.text = post.content
             avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
             val x = root.tag

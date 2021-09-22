@@ -18,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            app:constraint_referenced_ids="progressWall,nojobsL,noPostsL,progressJobs,jobLst,postLst,myPosts,myJobs,newJob,newPost,ava,username"
+            app:constraint_referenced_ids="jobLst,postLst,myPosts,myJobs,newJob,newPost,materialCardView"
             tools:visibility="gone" />
 
         <androidx.constraintlayout.widget.Group
@@ -26,8 +26,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="visible"
-            app:constraint_referenced_ids="loginFirst"
-            tools:visibility="visible" />
+            app:constraint_referenced_ids="loginFirst, login_image"
+            tools:visibility="gone" />
 
         <androidx.constraintlayout.widget.Group
             android:id="@+id/groupErrorOccurred"
@@ -56,6 +56,17 @@
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 
+        <ImageView
+            android:id="@+id/login_image"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_marginBottom="32dp"
+            android:scaleType="fitXY"
+            app:layout_constraintBottom_toTopOf="@+id/loginFirst"
+            app:layout_constraintEnd_toEndOf="@+id/loginFirst"
+            app:layout_constraintStart_toStartOf="@+id/loginFirst"
+            app:srcCompat="@drawable/ic_baseline_login_first" />
+
         <TextView
             android:id="@+id/loginFirst"
             android:layout_width="wrap_content"
@@ -64,49 +75,75 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.75" />
 
         <ProgressBar
             android:id="@+id/progressWall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@+id/postLst"
-            app:layout_constraintEnd_toStartOf="@+id/newPost"
-            app:layout_constraintStart_toEndOf="@+id/myPosts" />
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/postLst"
+            app:layout_constraintEnd_toEndOf="@+id/noPostsL"
+            app:layout_constraintStart_toStartOf="@+id/noPostsL"
+            app:layout_constraintTop_toTopOf="@+id/newPost" />
 
         <ProgressBar
             android:id="@+id/progressJobs"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="@+id/jobLst"
-            app:layout_constraintEnd_toEndOf="@+id/jobLst"
-            app:layout_constraintStart_toStartOf="@+id/jobLst"
-            app:layout_constraintTop_toTopOf="@+id/jobLst" />
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/newJob"
+            app:layout_constraintEnd_toEndOf="@+id/nojobsL"
+            app:layout_constraintStart_toStartOf="@+id/nojobsL"
+            app:layout_constraintTop_toTopOf="@+id/newJob"
+            tools:visibility="gone" />
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginLeft="7dp"
+            android:layout_marginRight="7dp"
+            android:background="@color/colorPrimary"
+            app:layout_constraintBottom_toTopOf="@+id/myPosts"
+            />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_marginLeft="7dp"
+            android:layout_marginRight="7dp"
+            android:layout_height="1dp"
+            android:background="@color/colorPrimary"
+            app:layout_constraintBottom_toTopOf="@+id/myJobs"
+            />
 
         <TextView
             android:id="@+id/myJobs"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
             android:text="My Jobs:"
             android:visibility="visible"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ava" />
+            app:layout_constraintTop_toBottomOf="@+id/materialCardView" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/postLst"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            tools:layout_height="10dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintTop_toBottomOf="@+id/myPosts"
-            tools:layout_editor_absoluteX="0dp"
+            app:layout_constraintTop_toBottomOf="@+id/newPost"
+            tools:layout_editor_absoluteX="-3dp"
             tools:listitem="@layout/card_user" />
 
         <TextView
             android:id="@+id/myPosts"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="64dp"
             android:text="My posts:"
             app:layout_constraintStart_toStartOf="parent"
@@ -116,39 +153,63 @@
             android:id="@+id/jobLst"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            tools:layout_height="10dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/myJobs"
+            app:layout_constraintTop_toBottomOf="@+id/newJob"
             tools:listitem="@layout/card_user" />
 
-        <ImageView
-            android:id="@+id/ava"
-            android:layout_width="wrap_content"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/materialCardView"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="32dp"
+            android:layout_margin="7dp"
+            app:cardElevation="3dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:srcCompat="@sample/posts_avatars" />
+            app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/username"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="name"
-            app:layout_constraintStart_toEndOf="@+id/ava"
-            app:layout_constraintTop_toTopOf="@+id/ava" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-        <ImageButton
+                <ImageView
+                    android:id="@+id/ava"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:scaleType="fitXY"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:srcCompat="@sample/posts_avatars" />
+
+                <TextView
+                    android:id="@+id/username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="name"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/ava"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.31" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <Button
             android:id="@+id/newPost"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="1dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="8dp"
             android:src="@drawable/ic_baseline_plus_one_24"
-            app:layout_constraintBottom_toTopOf="@+id/postLst"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:text="new Post"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/myPosts" />
 
         <TextView
             android:id="@+id/nojobsL"
@@ -156,11 +217,11 @@
             android:layout_height="wrap_content"
             android:text="no jobs"
             android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@+id/jobLst"
-            app:layout_constraintEnd_toEndOf="@+id/jobLst"
-            app:layout_constraintStart_toStartOf="@+id/jobLst"
-            app:layout_constraintTop_toTopOf="@+id/jobLst"
-            tools:visibility="visible" />
+            app:layout_constraintEnd_toStartOf="@+id/newJob"
+
+            app:layout_constraintStart_toEndOf="@+id/myJobs"
+            app:layout_constraintTop_toBottomOf="@+id/progressJobs"
+            tools:visibility="gone" />
 
         <TextView
             android:id="@+id/noPostsL"
@@ -169,21 +230,25 @@
             android:text="no posts"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@+id/postLst"
-            app:layout_constraintEnd_toEndOf="@+id/postLst"
-            app:layout_constraintStart_toStartOf="@+id/postLst"
+            app:layout_constraintEnd_toStartOf="@+id/newPost"
+            app:layout_constraintStart_toEndOf="@+id/myPosts"
             app:layout_constraintTop_toTopOf="@+id/postLst"
             tools:visibility="gone" />
 
 
-        <ImageButton
+        <Button
             android:id="@+id/newJob"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
             android:src="@drawable/ic_baseline_plus_one_24"
+            android:text="new Job"
             android:visibility="gone"
-            app:layout_constraintBottom_toTopOf="@+id/jobLst"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/myJobs"
             tools:visibility="gone" />
+
+
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,10 +8,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import ru.netology.diploma.databinding.FragmentNewJobBinding
+import ru.netology.diploma.databinding.FragmentPostsBinding
 import ru.netology.diploma.viewmodel.JobsViewModel
 
 class NewJobFragment : Fragment() {
     private val viewModel: JobsViewModel by activityViewModels()
+    private var _binding: FragmentNewJobBinding? = null
+    private val binding get() = _binding!!
 
     @ExperimentalCoroutinesApi
     override fun onCreateView(
@@ -19,8 +22,12 @@ class NewJobFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val binding = FragmentNewJobBinding.inflate(inflater, container, false)
+        _binding = FragmentNewJobBinding.inflate(inflater, container, false)
+        return _binding!!.root
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         arguments?.getLong("user")?.let {
         }
 
@@ -35,6 +42,6 @@ class NewJobFragment : Fragment() {
     }
 
 
-        return binding.root
+
     }
 }

@@ -1,13 +1,25 @@
 package ru.netology.diploma.repository
 
+import androidx.lifecycle.LiveData
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import ru.netology.diploma.dto.*
+import ru.netology.diploma.entity.UserEntity
 
 
 interface AppEntities : UserRepository, PostRepository, EventRepository, JobsRepository,
-    AuthMethods, MyPage
+    AuthMethods, MyPage, AppWork
 
+
+enum class AppNetState {
+    NO_INTERNET, NO_SERVER_CONNECTION, CONNECTION_ESTABLISHED
+}
+
+
+interface AppWork {
+    fun savePageToPrefs(position: Int)
+    fun getSavedPage(): Int
+}
 
 interface MyPage {
     suspend fun getMyJobs()
@@ -15,6 +27,7 @@ interface MyPage {
 }
 
 interface AuthMethods {
+    suspend fun checkConnection() : AppNetState
     suspend fun authUser(login : String, pass : String, function: (id : Long, token: String) -> Unit)
     suspend fun checkToken() : Boolean
     suspend fun regNewUserWithoutAvatar(
@@ -39,6 +52,7 @@ interface EventRepository {
 interface UserRepository {
     val udata: Flow<PagingData<User>>
     suspend fun getAllUsers()
+         fun getUser(id : Long): LiveData<List<UserEntity>>
 }
 
 

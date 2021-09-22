@@ -3,18 +3,15 @@ package ru.netology.diploma.auth
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.messaging.ktx.messaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import ru.netology.diploma.api.ApiService
 import ru.netology.diploma.dto.AuthState
-import ru.netology.diploma.dto.PushToken
+import ru.netology.diploma.repository.AppNetState
 import ru.netology.diploma.repository.AuthMethods
 import javax.inject.Inject
 
@@ -29,8 +26,12 @@ class AppAuth @Inject constructor(
           const val idKey = "id"
           const val tokenKey = "token"
 
-        fun getAuthInfo(context: Context): Pair<Long, String?> {
+        fun initPrefs(context: Context){
             prefs = context.getSharedPreferences("authX", Context.MODE_PRIVATE)
+        }
+
+        fun getAuthInfo(context: Context): Pair<Long, String?> {
+            initPrefs(context)
             return prefs.getLong(idKey, 0) to
                     prefs.getString(tokenKey, null)
         }
@@ -41,11 +42,13 @@ class AppAuth @Inject constructor(
     private val _authStateFlow: MutableStateFlow<AuthState> = MutableStateFlow(AuthState())
 
 
-    init {
+
+    fun checkAmLogined(){
+
         val (id, token) = getAuthInfo(context)
 
         if (id == 0L || token == null) {  //ничего нет- чистим
-            cleanToken()
+            cleanTokenAndExit()
             Log.e("OkHttpClient", "no token , nothing to do")
             // токена нет - ничего не делать
 
@@ -58,19 +61,14 @@ class AppAuth @Inject constructor(
                 _authStateFlow.value = AuthState(id, token)
                 Log.e("OkHttpClient", " checkToken token valid END")
             }, {
-                cleanToken()
+                cleanTokenAndExit()
                 Log.e("OkHttpClient", " checkToken token FAIL END")
             })
 
         }
-
-
-        //sendPushToken()
     }
 
-
-
-    private fun cleanToken() {
+    private fun cleanTokenAndExit() {
         _authStateFlow.value = AuthState()
         with(prefs.edit()) {
             clear()
@@ -91,15 +89,19 @@ class AppAuth @Inject constructor(
 
 
     //----------------------
-    fun authUser(login: String, pass: String, failCase : ()-> Unit) = CoroutineScope(Dispatchers.Default).launch {
-        cleanToken()
-        try {
-            repository.authUser(login, pass) { id, token ->
-                setAuth(id, token)
+    fun authUser(login: String, pass: String, failCallBack : ()-> Unit) = CoroutineScope(Dispatchers.Default).launch {
+        if (repository.checkConnection() == AppNetState.CONNECTION_ESTABLISHED) {
+            initPrefs(context)
+            try {
+                cleanTokenAndExit()
+                repository.authUser(login, pass) { id, token ->
+                    setAuth(id, token)
+                }
+            } catch (e: Exception) {
+                failCallBack()
             }
-        }   catch (e: Exception) {
-            failCase()
-            Log.e("OkHttpClient", " testAuth execption ${e.cause}  ${e.message}")
+        } else {
+            failCallBack()
         }
     }
 

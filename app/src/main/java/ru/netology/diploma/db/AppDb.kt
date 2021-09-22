@@ -20,7 +20,7 @@ import ru.netology.diploma.enumeration.AttachmentType
     UserKeyEntry::class,
     EventKeyEntry::class,
     JobEntity::class
-                     ], version = 10, exportSchema = false)
+                     ], version = 11, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDb : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -47,6 +47,7 @@ abstract class AppDb : RoomDatabase() {
 
         private fun buildDatabase(context: Context) =
             Room.databaseBuilder(context, AppDb::class.java, "app.db")
+                .fallbackToDestructiveMigration()
                 .build()
     }
 }

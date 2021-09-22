@@ -8,15 +8,17 @@ import ru.netology.diploma.api.ApiService
 import ru.netology.diploma.auth.AppAuth
 import ru.netology.diploma.db.AppDb
 import ru.netology.diploma.entity.JobEntity
-import ru.netology.diploma.entity.PostEntity
-import ru.netology.diploma.entity.PostKeyEntry
 import ru.netology.diploma.entity.toEntity
 import ru.netology.diploma.error.ApiError
+import ru.netology.diploma.repository.AppNetState
+import ru.netology.diploma.repository.AuthMethods
 
 @ExperimentalPagingApi
 class JobsRemoteMediator(private val api: ApiService,
                          private val context: Context,
-                         private val base: AppDb)
+                         private val base: AppDb,
+                         private val repoNetwork: AuthMethods
+)
     : RemoteMediator<Int, JobEntity>() {
 
     override suspend fun load(
@@ -24,15 +26,19 @@ class JobsRemoteMediator(private val api: ApiService,
         state: PagingState<Int, JobEntity>
             ): MediatorResult {
         try {
+            val connected = repoNetwork.checkConnection() == AppNetState.CONNECTION_ESTABLISHED
 
-            val id = AppAuth.getAuthInfo(context).first
-            val response = when (loadType){
+            if (connected) {
+           // val id = AppAuth.getAuthInfo(context).first
+                Log.e("ssss", "job RemoteMediator id=  {id}")
+
+          /*  val response = when (loadType){
                 else -> {
                     base.jobDao().deleteAll()
                     //api.getLatestPosts(state.config.pageSize)
-                    api.getJobs(id)
+                    api.getJobs(3)
                 }
-               /*   LoadType.REFRESH -> {
+               *//*   LoadType.REFRESH -> {
                       base.postDao().deleteAll()
                       api.getLatestPosts(state.config.pageSize)
                   }
@@ -43,7 +49,7 @@ class JobsRemoteMediator(private val api: ApiService,
                   LoadType.PREPEND -> {
                       val id = base.keyWorkDao().max() ?: return MediatorResult.Success(false)
                     //  api.getAfterPosts(id, state.config.pageSize)
-                  }*/
+                  }*//*
             }
 
            if (! response.isSuccessful){
@@ -62,53 +68,18 @@ class JobsRemoteMediator(private val api: ApiService,
 
             }
 
-            base.withTransaction {
-                when (loadType){
-                    LoadType.REFRESH -> {
-                       /* base.keyPostPaginationDao().insert(
-                            listOf(
-                                 PostKeyEntry(
-                                     PostKeyEntry.Type.PREPEND,
-                                     body.first().id
-                                 ),
-                                PostKeyEntry(
-                                    PostKeyEntry.Type.APPEND,
-                                    body.last().id
-                                )
-                            )
-                        )*/
-                        base.jobDao().deleteAll()
-                    }
-                  /*  LoadType.PREPEND -> {
-                        base.keyPostPaginationDao().insert(
-                            listOf(
-                                PostKeyEntry(
-                                    PostKeyEntry.Type.PREPEND,
-                                    body.first().id
-                                ),
-                            )
-                        )
-
-                    }*/
-                 /*   LoadType.APPEND ->  {
-                        base.keyPostPaginationDao().insert(
-                            listOf(
-                                PostKeyEntry(
-                                    PostKeyEntry.Type.APPEND,
-                                    body.last().id
-                                )
-                            )
-                        )
-
-                    }*/
-                }
-
-                base.jobDao().insert(body.toEntity(id))
-            }
 
 
+                base.jobDao().insert(body.toEntity(3))
+*/
 
+
+                Log.e("OkHttpClient", "connected END")
             return  MediatorResult.Success(true)
+        } else {
+                Log.e("OkHttpClient", "DIS connected END")
+            return MediatorResult.Success(true)
+        }
         } catch (e: Exception){
             Log.e("OkHttpClient", "remote mediator Exception")
            return MediatorResult.Error(e)

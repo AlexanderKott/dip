@@ -7,12 +7,16 @@ import ru.netology.diploma.api.ApiService
 import ru.netology.diploma.db.AppDb
 import ru.netology.diploma.entity.EventEntity
 import ru.netology.diploma.entity.EventKeyEntry
-import ru.netology.diploma.entity.PostKeyEntry
 import ru.netology.diploma.error.ApiError
+import ru.netology.diploma.repository.AppNetState
+import ru.netology.diploma.repository.AuthMethods
+
 
 @ExperimentalPagingApi
 class EventsRemoteMediator(private val api: ApiService,
-                           private val base: AppDb)
+                           private val base: AppDb,
+                           private val repoNetwork: AuthMethods
+)
     : RemoteMediator<Int, EventEntity>() {
 
     override suspend fun load(
@@ -20,6 +24,9 @@ class EventsRemoteMediator(private val api: ApiService,
         state: PagingState<Int, EventEntity>
             ): MediatorResult {
         try {
+            val connected = repoNetwork.checkConnection() == AppNetState.CONNECTION_ESTABLISHED
+
+            if (connected) {
             val response = when (loadType){
                 else -> {
                     base.eventDao().deleteAll()
@@ -103,6 +110,9 @@ class EventsRemoteMediator(private val api: ApiService,
 
 
             return  MediatorResult.Success(true)
+            } else {
+                return MediatorResult.Success(true)
+            }
         } catch (e: Exception){
             Log.e("OkHttpClient", "remote mediator Exception")
            return MediatorResult.Error(e)

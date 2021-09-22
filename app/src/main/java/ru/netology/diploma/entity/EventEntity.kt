@@ -18,7 +18,7 @@ data class EventEntity(
     val authorId: Int,
     val content: String?,
     val link: String?,
-    val published: Int,
+    val published: Long,
     val speakerIds: List<String>?,
     @ColumnInfo(name = "event_type")
     val type: String?

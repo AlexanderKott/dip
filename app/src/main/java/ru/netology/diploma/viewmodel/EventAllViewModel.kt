@@ -7,7 +7,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import ru.netology.diploma.auth.AppAuth
-import ru.netology.diploma.error.Error404
 import ru.netology.diploma.model.*
 import ru.netology.diploma.repository.AppEntities
 import javax.inject.Inject
@@ -24,14 +23,9 @@ class EventAllViewModel @Inject constructor(var repository: AppEntities ,
 
     val cachedevents = repository.edata.cachedIn(viewModelScope)
 
-    private val _dataState = MutableLiveData<FeedModelState>()
-    val dataState: LiveData<FeedModelState>
+    private val _dataState = SingleLiveEvent<FeedModelState>()
+    val dataState: SingleLiveEvent<FeedModelState>
         get() = _dataState
-
-    init {
-        loadEvents()
-    }
-
 
     fun loadEvents() = viewModelScope.launch {
         try {
@@ -39,10 +33,6 @@ class EventAllViewModel @Inject constructor(var repository: AppEntities ,
                 repository.getAllEvents()
             _dataState.value = FeedModelState()
         }
-        catch (e: Error404) {
-            _dataState.value = FeedModelState(empty = true)
-            }
-
 
         catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)
