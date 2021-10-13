@@ -8,5 +8,9 @@
     <!-- fallback для всех остальных состояний -->
     <item
         android:drawable="@drawable/ic_like_outlined_24dp"
+        android:state_checked="false"
+        />
+    <item
+        android:drawable="@drawable/ic_wait"
         />
 </selector>

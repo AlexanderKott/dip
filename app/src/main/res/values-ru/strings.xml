@@ -29,14 +29,23 @@
     <string name="sign_up">Регистрация</string>
     <string name="sign_out">Выход</string>
     <string name="empty_records">Нечего отобразить.&#128221;\n Потяните вниз экрана чтобы получить данные.</string>
-    <string name="login_first">&#128221;  Залогинитесь сначала, \n чтобы видеть Вашу страницу</string>
+    <string name="login_first">Залогинитесь сначала, чтобы видеть Вашу страницу</string>
     <string name="tab_text_1">Пользователи</string>
     <string name="tab_text_2">Все посты</string>
     <string name="tab_text_3">События</string>
+    <string name="tab_text_4">Вакансии</string>
     <string name="tab_text_0">Моя страница</string>
     <string name="click_refresh">Произошла ошибка. Потяните вниз чтобы обновить страницу</string>
     <string name="error_occured">Ошибка получения данных</string>
     <string name="seeEvents"><u>посмотреть событие</u></string>
-    <string name="error_dialog">Error</string>
-    <string name="error_dialog_text">Произошла ошибка :(</string>
+    <string name="enter_dialog">Авторизация</string>
+    <string name="error_dialog_auth1">Нет соединения с интернет</string>
+    <string name="error_dialog_auth2">Удаленный сервер не доступен</string>
+    <string name="error_dialog_auth3">Авторизация успешна</string>
+    <string name="error_dialog_auth4">Не удалось найти такого пользователя</string>
+    <string name="error_dialog_auth5">Не верный пароль</string>
+    <string name="error_dialog_auth6">Ошибка сервера (500)</string>
+    <string name="new_post">New post</string>
+    <string name="firstTimeLoading">Server\'s warm up can take more than 30 seconds.</string>
+    <string name="proceed">work offline</string>
 </resources>

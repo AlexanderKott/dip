@@ -16,14 +16,26 @@
         android:background="@drawable/gradient"
         android:padding="@dimen/common_spacing2">
 
+        <ImageView
+            android:id="@+id/postPicture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_business"
+            app:layout_constraintEnd_toStartOf="@+id/comanyL"
+            app:layout_constraintTop_toTopOf="@+id/comanyL"
+            tools:visibility="visible" />
+
         <TextView
             android:id="@+id/cname"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="@dimen/common_spacing"
             android:ellipsize="end"
             android:singleLine="true"
+            android:textColor="@color/colorAccent"
             app:layout_constraintEnd_toStartOf="@id/menu"
             app:layout_constraintStart_toEndOf="@+id/comanyL"
             app:layout_constraintTop_toTopOf="parent"
@@ -34,6 +46,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="@dimen/common_spacing"
             android:ellipsize="end"
             android:singleLine="true"
@@ -43,25 +56,30 @@
             app:layout_constraintVertical_chainStyle="packed" />
 
 
-
         <com.google.android.material.button.MaterialButton
             android:id="@+id/menu"
-            style="@style/Widget.AppTheme.IconButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="@string/description_post_menu"
-            android:visibility="visible"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="@dimen/icon_button_min_size"
+            android:minHeight="@dimen/icon_button_min_size"
+            android:paddingStart="@dimen/icon_button_padding"
+            android:paddingEnd="@dimen/icon_button_padding"
             app:icon="@drawable/ic_more_vert_24dp"
+            app:iconPadding="0dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="@+id/cname" />
 
         <TextView
             android:id="@+id/comanyL"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:text="Компания"
-            android:textStyle="bold"
+            android:layout_marginStart="32dp"
+            android:text="@string/companyname"
+            android:textColor="@color/colorAccent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/cname" />
 
@@ -69,10 +87,47 @@
             android:id="@+id/jpositionL"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Должность"
-            android:textStyle="bold"
+            android:text="@string/workPosition"
             app:layout_constraintStart_toStartOf="@+id/comanyL"
-            app:layout_constraintTop_toBottomOf="@+id/cname" />
+            app:layout_constraintTop_toTopOf="@+id/position" />
+
+        <TextView
+            android:id="@+id/jpositionL2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/WorfFrom"
+            app:layout_constraintStart_toStartOf="@+id/jpositionL"
+            app:layout_constraintTop_toBottomOf="@+id/jpositionL" />
+
+        <TextView
+            android:id="@+id/jpositionL4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/workTill"
+            app:layout_constraintStart_toStartOf="@+id/jpositionL2"
+            app:layout_constraintTop_toBottomOf="@+id/jpositionL2" />
+
+        <TextView
+            android:id="@+id/timeFrom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="time"
+            android:textStyle="italic"
+            app:layout_constraintStart_toEndOf="@+id/jpositionL2"
+            app:layout_constraintTop_toTopOf="@+id/jpositionL2" />
+
+        <TextView
+            android:id="@+id/timeTill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="time"
+            android:textStyle="italic"
+            app:layout_constraintStart_toStartOf="@+id/timeFrom"
+            app:layout_constraintTop_toBottomOf="@+id/timeFrom" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

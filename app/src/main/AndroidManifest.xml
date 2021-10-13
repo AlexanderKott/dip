@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ru.netology.diploma"
+    package="ru.kot1.demo"
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -15,33 +15,35 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:name="ru.netology.diploma.application.NMediaApplication"
+        android:name="ru.kot1.demo.application.DemoApplication"
         android:usesCleartextTraffic="${usesCleartextTraffic}">
 
         <provider
-            android:name="androidx.work.impl.WorkManagerInitializer"
-            android:authorities="${applicationId}.workmanager-init"
-            tools:node="remove" />
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="remove">
+        </provider>
 
-        <activity android:name="ru.netology.diploma.activity.AppActivity"
-            >
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
 
-                <category android:name="android.intent.category.DEFAULT" />
 
-                <data android:mimeType="text/plain" />
-            </intent-filter>
+        <activity android:name="ru.kot1.demo.activity.loading.LoadingActivity"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+            <activity android:name="ru.kot1.demo.activity.AppActivity">
+                <intent-filter>
+                    <action android:name="android.intent.action.SEND" />
+                    <category android:name="android.intent.category.DEFAULT" />
+                    <data android:mimeType="text/plain" />
+                </intent-filter>
+            </activity>
     </application>
 
     <queries>
-        <!-- Camera: https://github.com/Dhaval2404/ImagePicker/issues/143 -->
         <intent>
             <action android:name="android.media.action.IMAGE_CAPTURE" />
         </intent>

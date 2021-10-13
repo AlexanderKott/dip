@@ -1,10 +1,13 @@
 <resources>
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowActivityTransitions">true</item>
+
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:navigationBarColor">#3E3D3D</item>
     </style>
 
     <style name="Widget.AppTheme.IconButton" parent="Widget.MaterialComponents.Button.TextButton.Icon">
@@ -26,10 +29,25 @@
 
     <style name="AppTheme.Button" parent="Widget.AppCompat.Button.Borderless.Colored">
         <item name="colorButtonNormal">@color/colorAccent</item>
-        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textColor">#3E3D3D</item>
     </style>
 
     <style name="MineCustomTabText" parent="TextAppearance.Design.Tab">
         <item name="android:textSize">12sp</item>
     </style>
+
+    <style name="AppTheme.AppBarOverlayX" parent="ThemeOverlay.AppCompat.Dark">
+        <item name="android:textColorPrimary">#9E9E9E</item>
+        <item name="android:textColorSecondary">#9E9E9E</item>
+    </style>
+    <style name="AppTheme.PopupOverlayX" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:colorBackground">#312A2A</item>
+        <item name="android:background">#434141</item>
+        <item name="android:popupBackground">#535151</item>
+        <item name="android:itemBackground">#2C312C</item>
+
+        <item name="android:textColor">#FFFCFC</item>
+    </style>
+
+
 </resources>

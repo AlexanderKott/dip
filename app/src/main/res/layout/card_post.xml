@@ -51,7 +51,6 @@
             app:layout_constraintBottom_toBottomOf="@id/header"
             app:layout_constraintEnd_toStartOf="@id/menu"
             app:layout_constraintStart_toEndOf="@id/avatar"
-            app:layout_constraintTop_toBottomOf="@id/cname"
             tools:text="@sample/posts.json/data/published" />
 
         <com.google.android.material.button.MaterialButton
@@ -63,7 +62,8 @@
             android:visibility="gone"
             app:icon="@drawable/ic_more_vert_24dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible" />
 
         <androidx.constraintlayout.widget.Barrier
             android:id="@+id/header"
@@ -85,12 +85,80 @@
             app:layout_constraintTop_toBottomOf="@id/header"
             tools:text="@sample/posts.json/data/content" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/OpenPlace"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:foregroundTint="@color/colorAccent"
+            android:text="Open place"
+            android:textColor="@color/colorAccent"
+            android:visibility="gone"
+            app:icon="@drawable/ic_place"
+            app:iconTint="@color/colorAccent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/content"
+            app:layout_constraintVertical_bias="0.0"
+            tools:visibility="visible" />
+
+
+        <ImageView
+            android:id="@+id/postPicture"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitXY"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/footer"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/OpenPlace"
+            app:layout_constraintVertical_bias="0.0"
+            tools:srcCompat="@sample/posts.json/data/authorAvatar"
+            tools:visibility="visible" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/MediaAttach"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:text="download content"
+            android:visibility="gone"
+            app:icon="@drawable/ic_music"
+            app:layout_constraintBottom_toBottomOf="@+id/footer"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/postPicture"
+            app:layout_constraintVertical_bias="0.0"
+            tools:checked="@sample/posts.json/data/likedByMe"
+            tools:visibility="visible" />
+
+
+        <ProgressBar
+            android:id="@+id/progressWall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/footer"
+            app:layout_constraintEnd_toEndOf="@+id/content"
+            app:layout_constraintStart_toStartOf="@+id/content"
+            app:layout_constraintTop_toBottomOf="@+id/header"
+            tools:visibility="visible" />
+
+
         <androidx.constraintlayout.widget.Barrier
             android:id="@+id/footer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="visible"
             app:barrierDirection="bottom"
-            app:constraint_referenced_ids="content" />
+            app:constraint_referenced_ids="content,MediaAttach,progressWall, postPicture, OpenPlace"
+            tools:layout_editor_absoluteX="6dp"
+            tools:layout_editor_absoluteY="316dp"
+            tools:visibility="visible" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/like"
@@ -112,7 +180,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/common_spacing"
             android:contentDescription="@string/description_post_share"
-            app:iconTint="@color/colorPrimary"
+            app:iconTint="@color/colorAccent"
             app:layout_constraintStart_toEndOf="@+id/like"
             app:layout_constraintTop_toBottomOf="@id/footer"
             app:icon="@drawable/ic_share_24dp"
