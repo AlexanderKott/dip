@@ -3,10 +3,12 @@ package ru.kot1.demo.application
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.*
+import com.yandex.mapkit.MapKitFactory
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import ru.kot1.demo.BuildConfig
 import ru.kot1.demo.work.RefreshPostsWorker
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -18,9 +20,10 @@ class DemoApplication : Application() , Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         setupWork()
+        MapKitFactory.setApiKey(getKey())
     }
 
-
+    private fun getKey() = BuildConfig.MAPKEY
 
 
     private fun setupWork() {

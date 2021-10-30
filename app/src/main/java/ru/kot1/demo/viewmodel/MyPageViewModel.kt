@@ -44,7 +44,7 @@ class MyPageViewModel @Inject constructor(var repository: AppEntities,
         ).flow.map {
             it.map{ job ->
                 val myOwnJob =  job.toDto()
-                    myOwnJob.belongsToMe = true
+                    myOwnJob.copy(belongsToMe = true)
                 myOwnJob
             }
 

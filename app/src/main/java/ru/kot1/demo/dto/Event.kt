@@ -4,27 +4,38 @@ data class Event(
     val attachment: Attachment?,
     val author: String?,
     val authorAvatar: String?,
-    val authorId: Int,
+    val authorId: Long,
     val content: String?,
-    val id: Int,
+    val id: Long,
     val link: String?,
-    val published: Long,
-    val datetime : Long,
-    val speakerIds: List<String>?,
-    val type: String?
+    val published: String?,
+    val datetime : String?,
+    val speakerIds: List<Long>?,
+    val type: String?,
+    val likedByMe : Boolean,
+    val participatedByMe : Boolean,
+    val downloadingProgress : Byte?,
+
+    val speakerNames: List<String>? = null,
+    val logined : Boolean = false,
+    val belongsToMe : Boolean? = null,
+
 )
 
 
 val emptyEvent = Event (
     attachment = null,
-    author = null,
-    authorAvatar = null,
+    author = "",
+    authorAvatar = "",
     authorId = 0,
     content = null,
     id = 0,
     link = null,
-    published = 0,
-    datetime = 0,
+    published = null,
+    datetime = null,
     speakerIds = null,
-    type = null
+    type = null,
+    likedByMe = false,
+    participatedByMe = false,
+    downloadingProgress = null
         )

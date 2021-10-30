@@ -14,10 +14,12 @@ data class Post(
     val mentionIds: List<String>?,
     val mentionedMe: Boolean,
     val published: String?,
-    val ownedByMe: Boolean = false,
+    val downloadingProgress : Byte?,
 
+    val ownedByMe: Boolean = false,
     var isLoading : Boolean = false,
-    val logined : Boolean = false
+    val logined : Boolean = false,
+
 )
 
 
@@ -34,5 +36,6 @@ val  empty = Post(
     link= "",
     mentionIds= null,
     mentionedMe= false,
-    published= null
+    published= null,
+    downloadingProgress = 0
 )

@@ -14,11 +14,12 @@ interface ApiService {
     suspend fun authMe (@Query("login") login: String,@Query("pass") pass: String)
             : Response<AuthState>
 
-    @Headers("Content-Type: application/x-www-form-urlencoded")
+    @Multipart
     @POST("users/registration")
-    suspend fun regMeWithoutAvatar (@Query("login") login: String,
-                                    @Query("pass") pass: String,
-                                    @Query("name") name: String,
+    suspend fun regMeAvatar (@Query("login") login: String,
+                             @Query("pass") pass: String,
+                             @Query("name") name: String,
+                             @Part media: MultipartBody.Part?
     )
             : Response<AuthState>
 
@@ -46,6 +47,23 @@ interface ApiService {
     @GET("events/{id}")
     suspend fun getEventById(@Path("id") id: Long): Response<Event>
 
+    @POST("events")
+    suspend fun saveEvent(@Body event: Event): Response<Event>
+
+    @DELETE ("events/{id}")
+    suspend fun deleteEvent(@Path("id") eventId: Long): Response<Unit>
+
+    @POST ("events/{id}/likes")
+    suspend fun setLikeToEvent(@Path("id") id: Long): Response<Event>
+
+    @DELETE ("events/{id}/likes")
+    suspend fun setDislikeToEvent(@Path("id") postId: Long): Response<Event>
+
+    @POST ("events/{id}/participants")
+    suspend fun participateToEvent(@Path("id") id: Long): Response<Event>
+
+    @DELETE  ("events/{id}/participants")
+    suspend fun doNotParticipateToEvent(@Path("id") id: Long): Response<Event>
 
 
 

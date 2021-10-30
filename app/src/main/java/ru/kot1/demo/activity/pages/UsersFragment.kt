@@ -52,21 +52,19 @@ class UsersFragment : Fragment() {
                 val bundle = Bundle()
                 bundle.putLong("user", user.id)
                 setFragmentResult("keyWall", bundle)
-                requireActivity().setTitle(R.string.tab_text_2)
             }
 
             override fun onJobs(user: User) {
                 val bundle = Bundle()
                 bundle.putLong("user", user.id)
                 setFragmentResult("keyJobs", bundle)
-                requireActivity().setTitle(R.string.tab_text_4)
+
             }
 
             override fun onEvents(user: User) {
                 val bundle = Bundle()
                 bundle.putLong("user", user.id)
                 setFragmentResult("keyEvents", bundle)
-                requireActivity().setTitle(R.string.tab_text_3)
             }
 
         })

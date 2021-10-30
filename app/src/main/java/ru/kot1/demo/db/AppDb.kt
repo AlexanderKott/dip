@@ -28,7 +28,7 @@ import java.lang.reflect.Type
     UserKeyEntry::class,
     EventKeyEntry::class,
     JobEntity::class
-                     ], version = 26, exportSchema = false)
+                     ], version = 46, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDb : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -59,16 +59,14 @@ abstract class AppDb : RoomDatabase() {
         private fun buildDatabase(context: Context) =
             Room.databaseBuilder(context, AppDb::class.java, "app.db")
                 .fallbackToDestructiveMigration()
+                //.allowMainThreadQueries()
                 .build()
     }
 }
 
 
 class Converters {
-    @TypeConverter
-    fun toAttachmentType(value: String) = enumValueOf<AttachmentType>(value)
-    @TypeConverter
-    fun fromAttachmentType(value: AttachmentType) = value.name
+
 
     @TypeConverter
     fun listToJson(value: List<String>?) = Gson().toJson(value)
@@ -84,4 +82,18 @@ class Converters {
         val gson = Gson()
         return gson.toJson(list)
     }
+
+
+    @TypeConverter
+    fun toLongList(value: String?): ArrayList<Long>? {
+        val listType: Type = object : TypeToken<ArrayList<Long>?>() {}.type
+        return Gson().fromJson(value, listType)
+    }
+
+    @TypeConverter
+    fun toStringFromLong(list: List<Long>?): String? {
+        val gson = Gson()
+        return gson.toJson(list)
+    }
+
 }

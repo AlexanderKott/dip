@@ -43,15 +43,22 @@ android {
     }
 
     buildTypes {
+        def Properties properties = new Properties()
+        properties.load(project.rootProject.file("project.properties").newDataInputStream())
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             manifestPlaceholders.usesCleartextTraffic = false
             buildConfigField "String", "BASE_URL", '"http://alexk-demo-blog.herokuapp.com"'
+            buildConfigField "String", "MAPKEY", properties.getProperty("yandexMapKey", "")
         }
         debug {
+            minifyEnabled false
+            debuggable = true
             manifestPlaceholders.usesCleartextTraffic = true
             buildConfigField "String", "BASE_URL", '"http://alexk-demo-blog.herokuapp.com"'
+            buildConfigField "String", "MAPKEY", properties.getProperty("yandexMapKey", "")
         }
     }
 }
@@ -90,6 +97,10 @@ dependencies {
     implementation("androidx.viewpager2:viewpager2:1.0.0")
     implementation 'com.nbsp:materialfilepicker:1.9.1'
     implementation "com.airbnb.android:lottie:$lottieVersion"
+    implementation 'com.yandex.android:maps.mobile:4.0.0-full'
+
+    implementation 'com.localebro:okhttpprofiler:1.0.8'
+
 
     implementation ("com.github.bumptech.glide:okhttp3-integration:$glide_version"){
         exclude group: 'glide-parent'

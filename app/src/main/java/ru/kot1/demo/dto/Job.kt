@@ -8,5 +8,5 @@ data class Job(
     val start: Long,
     val finish: Long,
     val link: String? = null,
-    var belongsToMe : Boolean = false
+    val belongsToMe : Boolean = false
 )

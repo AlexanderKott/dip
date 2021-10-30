@@ -6,11 +6,13 @@ import android.os.Bundle
 import android.os.Environment
 import android.view.*
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.setFragmentResult
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.snackbar.Snackbar
 import com.nbsp.materialfilepicker.MaterialFilePicker
@@ -23,32 +25,32 @@ import ru.kot1.demo.enumeration.AttachmentType
 import ru.kot1.demo.util.AndroidUtils
 import ru.kot1.demo.util.StringArg
 import ru.kot1.demo.viewmodel.EditPostViewModel
+import ru.kot1.demo.viewmodel.MediaWorkPostViewModel
 import java.io.File
 import java.util.regex.Pattern
+import androidx.activity.result.ActivityResultCallback
+
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 
 
 @AndroidEntryPoint
 class NewPostFragment : Fragment() {
     private val viewModel: EditPostViewModel by activityViewModels()
+    private val mwPostViewModel: MediaWorkPostViewModel by activityViewModels()
+
+    private lateinit var mapResultLauncher: ActivityResultLauncher<Intent>
 
     private val photoRequestCode = 1
     private val cameraRequestCode = 2
     private val musicRequestCode = 3
     private val videoRequestCode = 4
 
-    companion object {
-        var Bundle.textArg: String? by StringArg
-    }
-
-
     private var fragmentBinding: FragmentNewPostBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        (activity as AppCompatActivity).supportActionBar?.setTitle(R.string.new_post)
-
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -64,7 +66,7 @@ class NewPostFragment : Fragment() {
                         Toast.makeText(
                             requireContext(),
                             R.string.enter_anything,
-                            Toast.LENGTH_SHORT
+                            Toast.LENGTH_LONG
                         )
                             .show()
                         return false
@@ -73,11 +75,14 @@ class NewPostFragment : Fragment() {
 
                     viewModel.preparePostText(it.edit.text.toString())
                     viewModel.save()
+                    viewModel.edited.value?.let { post -> mwPostViewModel.deleteFile(post) }
                     AndroidUtils.hideKeyboard(requireView())
                     activity?.supportFragmentManager?.popBackStack()
 
-                   /* Toast.makeText(requireContext(), "Вы увидите пост когда",
-                        Toast.LENGTH_SHORT).show()*/
+                    Toast.makeText(
+                        requireContext(), R.string.post_soon,
+                        Toast.LENGTH_SHORT
+                    ).show()
 
                 }
                 true
@@ -86,6 +91,19 @@ class NewPostFragment : Fragment() {
         }
     }
 
+
+    private fun initMapResult(){
+        mapResultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                   val data = result.data
+                   val lat =  data?.getFloatExtra("lat", 0F)
+                   val long = data?.getFloatExtra("long", 0F)
+
+                    viewModel.preparePostCoords(Coords(lat, long))
+                }
+            }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -98,14 +116,22 @@ class NewPostFragment : Fragment() {
             false
         )
         fragmentBinding = binding
+        (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        initMapResult()
 
         arguments?.getLong("post")?.let { id ->
             arguments?.getInt("postPosition")?.let { position ->
-                if (id != 0L) viewModel.loadUser(id, position) else {
+                if (id != 0L) {
+                    (activity as AppCompatActivity).supportActionBar?.setTitle(R.string.edit_post)
+                    viewModel.loadUser(id, position)
+                } else {
+                    (activity as AppCompatActivity).supportActionBar?.setTitle(R.string.new_post)
                     viewModel.prepareForNew()
                 }
             }
         }
+
+
 
         viewModel.postText.observe(viewLifecycleOwner) { text ->
             binding.edit.setText(text)
@@ -122,8 +148,8 @@ class NewPostFragment : Fragment() {
                 binding.previewPanel.visibility = View.VISIBLE
                 when (it.dataType) {
                     AttachmentType.IMAGE -> {
-                        if (it.uri!= null) {
-                        binding.previewPhoto.setImageURI(it.uri)
+                        if (it.uri != null) {
+                            binding.previewPhoto.setImageURI(it.uri)
                         } else {
                             binding.previewPhoto.setImageResource(R.drawable.ic_image)
                         }
@@ -196,25 +222,18 @@ class NewPostFragment : Fragment() {
 
         binding.buttonPlace.setOnClickListener {
             binding.placePanel.isVisible = true
+            val (lat, long) = viewModel.getPostCoords()
 
-            val lat = (-85..85).random().toFloat()
-            val long = (-180..180).random().toFloat()
+            val myIntent = Intent(requireActivity(), MapActivity::class.java)
+            myIntent.putExtra("lat", lat ?: 0F)
+            myIntent.putExtra("long", long ?: 0F)
+            mapResultLauncher.launch(myIntent)
 
-            viewModel.preparePostCoords(
-                Coords(lat = lat, long = long)
-            )
-
-            Toast.makeText(
-                requireContext(),
-                "Demo-version: You have selected a random place on the Map",
-                Toast.LENGTH_SHORT
-            )
-                .show()
         }
 
         binding.removePlace.setOnClickListener {
             binding.placePanel.isVisible = false
-            viewModel.preparePostCoords(null)
+            viewModel.removePostCoords()
         }
 
 

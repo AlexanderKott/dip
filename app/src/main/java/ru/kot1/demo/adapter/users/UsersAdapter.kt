@@ -6,8 +6,11 @@ import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.bumptech.glide.request.RequestOptions
 import ru.kot1.demo.BuildConfig
 import ru.kot1.demo.R
+import ru.kot1.demo.adapter.loadX
 import ru.kot1.demo.databinding.CardUserBinding
 import ru.kot1.demo.dto.User
 import ru.kot1.demo.view.loadCircleCrop
@@ -69,7 +72,16 @@ class UserViewHolder(
         binding.apply {
             userInfo.text = user.name
             userid.text = "#${user.id}"
-           // avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${user.avatar}")
+            Log.e("ssss", "ava = ${user.avatar}")
+            avatar.loadX(
+                user.avatar,
+                RequestOptions()
+                    .transform(CircleCrop())
+                    .placeholder(R.drawable.ic_baseline_user_placeholder)
+                    .error(R.drawable.ic_baseline_error_placeholder)
+                    .timeout(7_000)
+            )
+
 
             toEvents.setOnClickListener {
                 onInteractionListener.onEvents(user)

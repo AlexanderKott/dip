@@ -27,6 +27,11 @@ import ru.kot1.demo.viewmodel.JobsViewModel
 class JobFragment : Fragment(R.layout.fragment_jobs) {
     private val viewModel: JobsViewModel by activityViewModels()
 
+    override fun onResume() {
+        super.onResume()
+        (activity as AppCompatActivity).supportActionBar?.setTitle(R.string.tab_text_4)
+    }
+
 
     @ExperimentalPagingApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

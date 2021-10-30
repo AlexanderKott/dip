@@ -3,11 +3,11 @@ package ru.kot1.demo.adapter.posts
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.BounceInterpolator
+import android.widget.ImageView
 import android.widget.PopupMenu
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestOptions
-import ru.kot1.demo.BuildConfig
+import com.google.android.material.button.MaterialButton
 import ru.kot1.demo.R
 import ru.kot1.demo.adapter.loadX
 import ru.kot1.demo.databinding.CardPostBinding
@@ -32,11 +32,11 @@ import java.util.*
 
 interface OnInteractionListener {
     fun onLike(post: Post)
-    fun onEdit(post: Post, position: Int)
-    fun onRemove(post: Post)
+    fun onEdit(post: Post, position: Int) {}
+    fun onRemove(post: Post) {}
     fun onShare(post: Post)
-    fun onVideoClick(post: Post)
-    fun onAudioClick(post: Post)
+    fun onMediaPrepareClick(post: Post)
+    fun onMediaReadyClick(post: Post)
     fun onPlaceClick(post: Post)
     fun onNotLogined(post: Post)
 }
@@ -130,7 +130,7 @@ class PostViewHolder(
             author.text = post.author
             published.text = convertLongToTime(post.published)
              avatar.loadX(
-                "${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}",
+                post.authorAvatar,
                 RequestOptions()
                     .transform(CircleCrop())
                     .placeholder(R.drawable.ic_baseline_user_placeholder)
@@ -153,8 +153,8 @@ class PostViewHolder(
                 content.isGone = true
                 like.isGone = true
                 share.isGone = true
-                OpenPlace.isGone = true
-                MediaAttach.isGone = true
+                openPlace.isGone = true
+                mediaAttach.isGone = true
                 postPicture.isGone = true
                 return
             }
@@ -220,11 +220,26 @@ class PostViewHolder(
 
 
 
+
             //Attach
            if (post.attachment != null) {
+
+
+               //label text:
+               if (post.downloadingProgress == null || post.downloadingProgress == 0.toByte()){
+                   mediaAttach.setText(R.string.download)
+               } else if (post.downloadingProgress == 100.toByte()) {
+                   mediaAttach.setText(R.string.openFile)
+               }else{
+                   mediaAttach.text = "${post.downloadingProgress}%"
+               }
+
+
+               //setup buttons
                 when(AttachmentType.valueOf(post.attachment.type)){
                     AttachmentType.IMAGE -> {
                         postPicture.isVisible = true
+                        mediaAttach.isGone = true
                         postPicture.loadX(
                             post.attachment.url,
                                 RequestOptions()
@@ -233,41 +248,72 @@ class PostViewHolder(
                                     .error(R.drawable.ic_baseline_error_placeholder)
                                     .timeout(7_000)
                             )
+                        postPicture.prepareOnClick(post)
                     }
 
                     AttachmentType.VIDEO -> {
-                        MediaAttach.isVisible = true
-                        MediaAttach.setIconResource(R.drawable.ic_video)
-                        MediaAttach.setOnClickListener {
-                            onInteractionListener.onVideoClick(post)
-                        }
+                        mediaAttach.isVisible = true
+                        postPicture.isGone = true
+                        mediaAttach.setIconResource(R.drawable.ic_video)
+                        mediaAttach.prepareOnClick(post)
                     }
 
                     AttachmentType.AUDIO -> {
-                        MediaAttach.isVisible = true
-                        MediaAttach.setOnClickListener {
-                            MediaAttach.setIconResource(R.drawable.ic_music)
-                            onInteractionListener.onAudioClick(post) }
+                        mediaAttach.isVisible = true
+                        postPicture.isGone = true
+                        mediaAttach.setIconResource(R.drawable.ic_music)
+                        mediaAttach.prepareOnClick(post)
                     }
 
                 }
+
+
+
             } else {
-               MediaAttach.isGone = true
+               mediaAttach.isGone = true
                postPicture.isGone = true
             }
 
+
+
             //Coords
           if (post.coords != null){
-                OpenPlace.isVisible = true
-                OpenPlace.setOnClickListener {
+                openPlace.isVisible = true
+                openPlace.setOnClickListener {
                         onInteractionListener.onPlaceClick(post)
                 }
-            } else { OpenPlace.isGone = true }
+            } else {
+                openPlace.isGone = true
+            }
 
 
 
         }
     }
+
+    private fun MaterialButton.prepareOnClick(post: Post) {
+         setOnClickListener {
+            if (post.downloadingProgress == null || post.downloadingProgress == 0.toByte()) {
+                 setText(R.string.downloading)
+                onInteractionListener.onMediaPrepareClick(post)
+                 setOnClickListener(null)
+            } else if (post.downloadingProgress == 100.toByte()) {
+                onInteractionListener.onMediaReadyClick(post)
+            }
+        }
+    }
+
+    private fun ImageView.prepareOnClick(post: Post) {
+        setOnClickListener {
+            if (post.downloadingProgress == null || post.downloadingProgress == 0.toByte()) {
+                onInteractionListener.onMediaPrepareClick(post)
+                setOnClickListener(null)
+            } else if (post.downloadingProgress == 100.toByte()) {
+                onInteractionListener.onMediaReadyClick(post)
+            }
+        }
+    }
+
 
 }
 

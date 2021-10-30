@@ -27,7 +27,6 @@ class EventsRemoteMediator(private val api: ApiService,
             if (connected) {
             val response = when (loadType){
                 else -> {
-                    base.eventDao().deleteAll()
                     api.getAllEvents()
                 }
             }

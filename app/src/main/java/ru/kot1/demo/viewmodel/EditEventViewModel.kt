@@ -1,12 +1,14 @@
 package ru.kot1.demo.viewmodel
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.*
 import androidx.work.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import ru.kot1.demo.auth.AppAuth
+import ru.kot1.demo.dto.Event
 import ru.kot1.demo.dto.EventUI
 import ru.kot1.demo.dto.emptyEvent
 import ru.kot1.demo.enumeration.AttachmentType
@@ -15,6 +17,7 @@ import ru.kot1.demo.repository.AppEntities
 import ru.kot1.demo.repository.RecordOperation
 import ru.kot1.demo.util.SingleLiveEvent
 import ru.kot1.demo.work.SaveEventWorker
+import java.util.*
 import javax.inject.Inject
 
 
@@ -28,7 +31,7 @@ class EditEventViewModel @Inject constructor(
     var auth: AppAuth
 ) : ViewModel() {
 
-    private val edited = MutableLiveData(emptyEvent)
+    val edited = MutableLiveData(emptyEvent)
 
     private val _attach = MutableLiveData<PreparedData?>(null)
     val attach: LiveData<PreparedData?>
@@ -52,13 +55,12 @@ class EditEventViewModel @Inject constructor(
                     val uri = _attach.value?.uri?.let {
                         it.toString()
                     }
+
                     val id : Long =
                         repository.saveEventForWorker(
                             event.copy(
-                                link = null,
-                                datetime = 0,
-                                type = null,
-                                speakerIds = mutableListOf()
+                                speakerIds = mutableListOf(auth.authStateFlow.value.id),
+                                published = Date().toInstant().toString(),
 
                             ),uri, type)
 
@@ -74,24 +76,8 @@ class EditEventViewModel @Inject constructor(
         _eventText.value = null
     }
 
-    fun loadEvent(id: Long) {
-        viewModelScope.launch {
-            operation = RecordOperation.CHANGE_RECORD
-            val event = repository.getEventByIdFromDB(id).toDto()
-            edited.value = event
-            _eventText.value = event.content
 
-            if (event.attachment != null) {
-                _attach.value = PreparedData(null,
-                    AttachmentType.valueOf(event.attachment.type))
-            } else {
-                _attach.value = null
-            }
-        }
-    }
-
-
-    fun deleteEvent(id: Long) {
+    fun deleteEvent(id: Long){
         initWorkManager(id, RecordOperation.DELETE_RECORD)
     }
 
@@ -121,13 +107,78 @@ class EditEventViewModel @Inject constructor(
     }
 
 
-    fun prepareForNew() {
-        operation = RecordOperation.NEW_RECORD
-        edited.value = emptyEvent
-        _attach.value = null
-        _eventText.value = ""
+    fun prepareEvent(id :Long) = viewModelScope.launch {
+        if (id != 0L) {
+            val event = repository.getEventByIdFromDB(id)
+            operation = RecordOperation.CHANGE_RECORD
+            edited.value = event?.toDto()
+            Log.e("ssss", "type= ${event?.toDto()?.type}")
+            Log.e("ssss", "datetime= ${event?.toDto()?.datetime}")
+            Log.e("ssss", "--link= ${event?.toDto()?.link}")
+
+            _eventText.value = event?.content
+
+            if (event?.attachment != null) {
+                _attach.value = PreparedData(
+                    null,
+                    AttachmentType.valueOf(event?.attachment.type)
+                )
+            } else {
+                _attach.value = null
+            }
+        } else {
+            operation = RecordOperation.NEW_RECORD
+            edited.value = emptyEvent
+            _attach.value = null
+            _eventText.value = ""
+        }
     }
 
+
+    fun prepareLink(linkx: String) {
+        edited.value = edited.value?.copy(link = linkx)
+        Log.e("ssss", "linkx= ${edited.value?.link}")
+    }
+
+    fun prepareType(type: String) {
+        edited.value = edited.value?.copy(type = type)
+    }
+
+    fun prepareDate(date: String) {
+        edited.value = edited.value?.copy(datetime = date)
+    }
+
+    fun dataIsCorrect() : Boolean{
+        Log.e("ssss", "+type= ${edited.value?.type}")
+        Log.e("ssss", "datetime= ${edited.value?.datetime}")
+        Log.e("ssss", "content= ${edited.value?.content}")
+        Log.e("ssss", "link= ${edited.value?.link}")
+
+
+        return !edited.value?.link.isNullOrBlank() &&
+                !edited.value?.type.isNullOrBlank() &&
+                !edited.value?.datetime.isNullOrBlank() &&
+                !edited.value?.content.isNullOrBlank()
+    }
+
+
+    fun setLikeOrDislike(event: Event) = viewModelScope.launch {
+        if (event.likedByMe) {
+            repository.setDislikeToEventById(event.id)
+        } else {
+            repository.likeEventById(event.id)
+        }
+    }
+
+
+
+    fun participate(event: Event) = viewModelScope.launch {
+        if (event.participatedByMe) {
+            repository.doNotParticipateToEvent(event.id)
+        } else {
+            repository.participateToEvent(event.id)
+        }
+    }
 
 
 }

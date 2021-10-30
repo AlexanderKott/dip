@@ -3,6 +3,7 @@ package ru.kot1.demo.dao
 import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 import ru.kot1.demo.entity.UserEntity
 
 @Dao
@@ -14,7 +15,8 @@ interface UserDao {
       fun getUser(id: Long): LiveData<List<UserEntity>>
 
     @Query("SELECT * FROM UserEntity")
-    fun getAllOffline(): List<UserEntity>
+     suspend fun getAllUsers(): List<UserEntity>
+
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(user: List<UserEntity>)

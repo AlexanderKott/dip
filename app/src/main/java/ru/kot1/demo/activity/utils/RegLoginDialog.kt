@@ -6,7 +6,10 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
+import com.github.dhaval2404.imagepicker.ImagePicker
+import com.google.android.material.button.MaterialButton
 import ru.kot1.demo.R
+import ru.kot1.demo.activity.AppActivity
 import ru.kot1.demo.repository.AppNetState
 
 
@@ -14,10 +17,12 @@ enum class Dialog {
     LOGIN, REGISTER, REGISTER_AVATAR
 }
 
+
+
 fun Activity.showLoginAuthDialog(
     dialogType: Dialog,
-    action: (login: String, password: String, name: String) -> Unit
-) {
+    actionCallback: (login: String, password: String, name: String) -> Unit) {
+
     val dialogBuilder = AlertDialog.Builder(this)
     val dialogView = layoutInflater.inflate(R.layout.login_auth, null)
 
@@ -27,7 +32,7 @@ fun Activity.showLoginAuthDialog(
             val password = dialogView.findViewById<EditText>(R.id.password)
             val name = dialogView.findViewById<EditText>(R.id.name)
 
-            action(login.text.toString(), password.text.toString(), name.text.toString())
+            actionCallback(login.text.toString(), password.text.toString(), name.text.toString())
         }
         .setNegativeButton("cancel") { a, b ->
 
@@ -52,11 +57,11 @@ fun Activity.showLoginAuthDialog(
 
     when (dialogType) {
         Dialog.REGISTER -> {
-            showRegFields(dialogView, alertDialog)
+            showRegFields(dialogView, alertDialog, this)
         }
 
         Dialog.REGISTER_AVATAR -> {
-            showRegFields(dialogView, alertDialog)
+            showRegFields(dialogView, alertDialog, this)
         }
     }
 
@@ -74,7 +79,8 @@ fun Activity.showLoginAuthDialog(
 
 private fun showRegFields(
     dialogView: View,
-    alertDialog: AlertDialog
+    alertDialog: AlertDialog,
+    activity: Activity
 ) {
 
     val password = dialogView.findViewById<EditText>(R.id.password)
@@ -83,13 +89,27 @@ private fun showRegFields(
     val password2 = dialogView.findViewById<EditText>(R.id.password2)
     val nameL = dialogView.findViewById<TextView>(R.id.nameL)
     val name = dialogView.findViewById<EditText>(R.id.name)
+    val setAva = dialogView.findViewById<MaterialButton>(R.id.setAva)
 
     passwordL.visibility = View.VISIBLE
     password2.visibility = View.VISIBLE
     name.visibility = View.VISIBLE
     nameL.visibility = View.VISIBLE
+    setAva.visibility = View.VISIBLE
 
-
+    setAva.setOnClickListener {
+        ImagePicker.with(activity)
+            .crop()
+            .compress(1024)
+            .galleryOnly()
+            .galleryMimeTypes(
+                arrayOf(
+                    "image/png",
+                    "image/jpeg",
+                )
+            )
+            .start(AppActivity.photoRequestCode)
+    }
 
     password.addTextChangedListener {
         checkField(password, password2, alertDialog)
@@ -116,7 +136,7 @@ private fun checkField(
     }
 }
 
-fun Activity.showAuthDialog(message: AppNetState) {
+fun Activity.showAuthResultDialog(message: AppNetState) {
     runOnUiThread {
         val dialog = AlertDialog.Builder(this)
             .setTitle(R.string.enter_dialog)

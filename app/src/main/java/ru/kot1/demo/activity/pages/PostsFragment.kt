@@ -5,6 +5,7 @@ import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -19,9 +20,11 @@ import kotlinx.coroutines.flow.collectLatest
 import ru.kot1.demo.R
 import ru.kot1.demo.adapter.posts.OnInteractionListener
 import ru.kot1.demo.activity.utils.PagingLoadStateAdapter
+import ru.kot1.demo.activity.utils.prepareIntent
 import ru.kot1.demo.adapter.posts.PostsAdapter
 import ru.kot1.demo.databinding.FragmentPostsBinding
 import ru.kot1.demo.dto.Post
+import ru.kot1.demo.viewmodel.MediaWorkPostViewModel
 import ru.kot1.demo.viewmodel.PostAllViewModel
 import ru.kot1.demo.viewmodel.PostViewModel
 
@@ -29,7 +32,13 @@ import ru.kot1.demo.viewmodel.PostViewModel
 class PostsFragment : Fragment(R.layout.fragment_posts) {
     private val viewModel: PostViewModel by activityViewModels()
     private val viewModelAll: PostAllViewModel by activityViewModels()
+    private val mwPostViewModel: MediaWorkPostViewModel by activityViewModels()
 
+
+    override fun onResume() {
+        super.onResume()
+        (activity as AppCompatActivity).supportActionBar?.setTitle(R.string.tab_text_2)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -38,36 +47,41 @@ class PostsFragment : Fragment(R.layout.fragment_posts) {
 
         val adapter = PostsAdapter(object : OnInteractionListener {
             override fun onNotLogined(post: Post) {
+                Toast.makeText(requireActivity(),
+                    getString(R.string.login_first_action),
+                    Toast.LENGTH_SHORT).show()
             }
 
-            override fun onVideoClick(post: Post) {
+            override fun onMediaPrepareClick(post: Post) {
+                mwPostViewModel.downloadMedia(post)
             }
 
-            override fun onAudioClick(post: Post) {
+            override fun onMediaReadyClick(post: Post) {
+                mwPostViewModel.openMedia(post.id){ file ->
+                    startActivity(Intent.createChooser(prepareIntent(file),
+                        getString(R.string.choose_app)))
+
+                }
             }
 
             override fun onPlaceClick(post: Post) {
                 val intent = Intent(
                     Intent.ACTION_VIEW,
-                    Uri.parse("geo:<" + post.coords?.lat.toString() +
-                            ">,<" + post.coords?.long.toString() +
-                            ">?q=<" + post.coords?.lat.toString() +
-                            ">,<" + post.coords?.long.toString() +
-                            ">(" + "The place" +
+                    Uri.parse("geo:<" + post.coords?.latitude.toString() +
+                            ">,<" + post.coords?.longitude.toString() +
+                            ">?q=<" + post.coords?.latitude.toString() +
+                            ">,<" + post.coords?.longitude.toString() +
+                            ">(" + getString(R.string.place)  +
                             ")")
                 )
                 startActivity(intent)
             }
-            override fun onEdit(post: Post, position: Int) {
-                //viewModel.edit(post)
-            }
+
 
             override fun onLike(post: Post) {
-                viewModelAll.setLikeOrDislike(post)
+                viewModelAll.like(post)
             }
 
-            override fun onRemove(post: Post) {
-            }
 
             override fun onShare(post: Post) {
                 val intent = Intent().apply {

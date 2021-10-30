@@ -17,7 +17,7 @@ data class PostWorkEntity(
     val authorId: Int,
     val content: String?,
     @Embedded
-    var coords: Coords?,
+    val coords: Coords?,
     val likeOwnerIds: List<String>?,
     val likedByMe: Boolean,
     val link: String?,
@@ -28,14 +28,15 @@ data class PostWorkEntity(
     val attachment: Attachment?,
     val mediaUri: String?,
     val mediaType: String?,
+    val downloadingProgress : Byte?
 ) {
     fun toDto() = Post(attachment, author, authorAvatar,authorId, content, coords, id,
-        likeOwnerIds, likedByMe, link, mentionIds, mentionedMe, published)
+        likeOwnerIds, likedByMe, link, mentionIds, mentionedMe, published,downloadingProgress)
 
     companion object {
         fun fromDto(dto: Post) =
             PostWorkEntity(dto.id,dto.author, dto.authorAvatar,dto.authorId,dto.content, dto.coords,
                 dto.likeOwnerIds,dto.likedByMe,dto.link,dto.mentionIds, dto.mentionedMe,
-                dto.published, dto.attachment, "", "")
+                dto.published, dto.attachment, "", "", dto.downloadingProgress)
     }
 }

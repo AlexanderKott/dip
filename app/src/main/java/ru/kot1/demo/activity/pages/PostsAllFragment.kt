@@ -4,7 +4,6 @@ import android.content.Intent
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,17 +27,22 @@ import ru.kot1.demo.dto.Post
 import ru.kot1.demo.viewmodel.AuthViewModel
 import ru.kot1.demo.viewmodel.PostAllViewModel
 import javax.inject.Inject
+import ru.kot1.demo.activity.utils.prepareIntent
+import ru.kot1.demo.viewmodel.MediaWorkPostViewModel
+
 
 @AndroidEntryPoint
 class PostsAllFragment : Fragment() {
     private val viewModel: PostAllViewModel by activityViewModels()
     private val authViewModel: AuthViewModel by activityViewModels()
+    private val mwPostViewModel: MediaWorkPostViewModel by activityViewModels()
 
     private var _binding: FragmentPostsBinding? = null
 
     @Inject
     lateinit var appAuth: AppAuth
 
+    private lateinit var adapter : PostsAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,41 +56,43 @@ class PostsAllFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
             super.onViewCreated(view, savedInstanceState)
 
-        val adapter = PostsAdapter(object : OnInteractionListener {
+          adapter = PostsAdapter(object : OnInteractionListener {
             override fun onNotLogined(post: Post) {
-                Toast.makeText(requireActivity(), "Please login first",
+                Toast.makeText(requireActivity(),
+                    getString(R.string.login_first_action),
                     Toast.LENGTH_SHORT).show()
             }
 
-            override fun onVideoClick(post: Post) {
-            }
+              override fun onMediaReadyClick(post: Post) {
+                  mwPostViewModel.openMedia(post.id){ file ->
+                      startActivity(Intent.createChooser(prepareIntent(file),
+                          getString(R.string.choose_app)))
 
-            override fun onAudioClick(post: Post) {
+                  }
+              }
+
+              override fun onMediaPrepareClick(post: Post) {
+                  mwPostViewModel.downloadMedia(post)
             }
 
             override fun onPlaceClick(post: Post) {
                 val intent = Intent(
                     Intent.ACTION_VIEW,
-                    Uri.parse("geo:<" + post.coords?.lat.toString() +
-                            ">,<" + post.coords?.long.toString() +
-                            ">?q=<" + post.coords?.lat.toString() +
-                            ">,<" + post.coords?.long.toString() +
-                            ">(" + "The place" +
+                    Uri.parse("geo:<" + post.coords?.latitude.toString() +
+                            ">,<" + post.coords?.longitude.toString() +
+                            ">?q=<" + post.coords?.latitude.toString() +
+                            ">,<" + post.coords?.longitude.toString() +
+                            ">(" + getString(R.string.place) +
                             ")")
                 )
                 startActivity(intent)
             }
-            override fun onEdit(post: Post, position: Int) {
-                // not allowed from here
-            }
+
 
             override fun onLike(post: Post) {
-                    viewModel.setLikeOrDislike(post)
+                    viewModel.like(post)
             }
 
-            override fun onRemove(post: Post) {
-                // not allowed from here
-            }
 
             override fun onShare(post: Post) {
                 val intent = Intent().apply {
@@ -94,10 +100,7 @@ class PostsAllFragment : Fragment() {
                     putExtra(Intent.EXTRA_TEXT, post.content)
                     type = "text/plain"
                 }
-
-                val shareIntent =
-                    Intent.createChooser(intent, getString(R.string.chooser_share_post))
-                startActivity(shareIntent)
+                startActivity(Intent.createChooser(intent, getString(R.string.chooser_share_post)))
             }
         })
 

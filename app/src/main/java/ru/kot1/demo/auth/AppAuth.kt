@@ -81,6 +81,8 @@ class AppAuth @Inject constructor(
 
     val authStateFlow: StateFlow<AuthState> = _authStateFlow.asStateFlow()
 
+    val myId: Long
+    get() = authStateFlow.value.id
 
     //----------------------
 
@@ -116,7 +118,7 @@ class AppAuth @Inject constructor(
                     } catch (e: IllegalStateException) {
                         Log.e("aaaa", "  errorr rrr2 ${e.javaClass.simpleName}  ${e.printStackTrace()} ${e.message}")
                     } catch (e: Exception) {
-                        Log.e("aaaa", "  errorr rrr ${e.javaClass.simpleName}")
+                        Log.e("aaaa", "  errorr rrr3 ${e.javaClass.simpleName}")
                     }
                 }
                 AppNetState.NO_INTERNET -> {
@@ -130,42 +132,55 @@ class AppAuth @Inject constructor(
         }
 
 
-    fun regNewUserWithoutAvatar(
+    fun newUserRegistration(
         login: String,
         pass: String,
         name: String,
+        uri: String? = null,
         callBack: (AppNetState) -> Unit
     ) =
         CoroutineScope(Dispatchers.Default).launch {
             when (repository.checkConnection()) {
                 AppNetState.CONNECTION_ESTABLISHED -> {
                     try {
-                        repository.regNewUserWithoutAvatar(login, pass, name) { id, token ->
+                        repository.regNewUser(login, pass, name, uri) { id, token ->
                             cleanToken()
                             setAuth(id, token)
-                            callBack(AppNetState.CONNECTION_ESTABLISHED)
+                            Handler(Looper.getMainLooper()).post {
+                                callBack(AppNetState.CONNECTION_ESTABLISHED)
+                            }
                         }
                     } catch (e: ApiError) {
                         if (e.status == 404) {
-                            callBack(AppNetState.THIS_USER_NOT_REGISTERED)
+                            Handler(Looper.getMainLooper()).post {
+                                callBack(AppNetState.THIS_USER_NOT_REGISTERED)
+                            }
                         }
                         if (e.status == 400) {
-                            callBack(AppNetState.INCORRECT_PASSWORD)
+                            Handler(Looper.getMainLooper()).post {
+                                callBack(AppNetState.INCORRECT_PASSWORD)
+                            }
                         }
                         if (e.status == 500) {
-                            callBack(AppNetState.SERVER_ERROR_500)
+                            Handler(Looper.getMainLooper()).post {
+                                callBack(AppNetState.SERVER_ERROR_500)
+                            }
                         }
                     } catch (e: Exception) {
-                        Log.e("aaaa", "  errorr rrr ${e.javaClass.simpleName}")
+                        Log.e("aaaa", "  errorr rrr1 ${e.javaClass.simpleName}")
                     }
                 }
 
                 AppNetState.NO_INTERNET -> {
-                    callBack(AppNetState.NO_INTERNET)
+                    Handler(Looper.getMainLooper()).post {
+                        callBack(AppNetState.NO_INTERNET)
+                    }
                 }
 
                 AppNetState.NO_SERVER_CONNECTION -> {
-                    callBack(AppNetState.NO_SERVER_CONNECTION)
+                    Handler(Looper.getMainLooper()).post {
+                        callBack(AppNetState.NO_SERVER_CONNECTION)
+                    }
                 }
 
             }

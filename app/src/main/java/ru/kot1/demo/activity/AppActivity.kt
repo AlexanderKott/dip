@@ -1,22 +1,27 @@
 package ru.kot1.demo.activity
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
+import com.github.dhaval2404.imagepicker.ImagePicker
 import dagger.hilt.android.AndroidEntryPoint
 import ru.kot1.demo.R
+import ru.kot1.demo.activity.editors.MapPickerFragment
+import ru.kot1.demo.activity.editors.NewEventFragment
 import ru.kot1.demo.activity.pages.EventsFragment
 import ru.kot1.demo.activity.pages.JobFragment
 import ru.kot1.demo.activity.editors.NewJobFragment
 import ru.kot1.demo.activity.editors.NewPostFragment
 import ru.kot1.demo.activity.pages.PostsFragment
 import ru.kot1.demo.activity.utils.Dialog
-import ru.kot1.demo.activity.utils.showAuthDialog
+import ru.kot1.demo.activity.utils.showAuthResultDialog
 import ru.kot1.demo.activity.utils.showLoginAuthDialog
 import ru.kot1.demo.auth.AppAuth
 import ru.kot1.demo.viewmodel.AuthViewModel
@@ -27,20 +32,18 @@ import javax.inject.Inject
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
     private val viewModel: AuthViewModel by viewModels()
 
+    companion object {
+        const val photoRequestCode = 1
+    }
+
     @Inject
     lateinit var appAuth: AppAuth
-
-    override fun  onBackPressed(){
-        setTitle(R.string.app_name)
-        supportActionBar?.setDisplayHomeAsUpEnabled(false)
-        (findViewById<Toolbar>(R.id.toolbar)).setNavigationIcon(R.drawable.ic_baseline_menu_book_24)
-        super.onBackPressed()
-    }
+    private var imgIri : Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setSupportActionBar((findViewById(R.id.toolbar)))
-        (findViewById<Toolbar>(R.id.toolbar)).setNavigationIcon(R.drawable.ic_baseline_menu_book_24)
+
 
         viewModel.authData.observe(this) {
             invalidateOptionsMenu()
@@ -71,6 +74,13 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             setFragmentResultListener("keyNewPost", this@AppActivity) { _, bundle ->
                 replaceFragment(NewPostFragment::class.java, bundle)
             }
+            setFragmentResultListener("keyNewEvent", this@AppActivity) { _, bundle ->
+                replaceFragment(NewEventFragment::class.java, bundle)
+            }
+            setFragmentResultListener("keyMapPicker", this@AppActivity) { _, bundle ->
+                replaceFragment(MapPickerFragment::class.java, bundle)
+            }
+
         }
 
     }
@@ -110,7 +120,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 showLoginAuthDialog(Dialog.LOGIN) { login, password, _ ->
                     viewModel.selectMyPage()
                     appAuth.authUser(login, password) {
-                        showAuthDialog(it)
+                        showAuthResultDialog(it)
                         viewModel.markMyPageAlreadyOpened()
                     }
                 }
@@ -120,8 +130,8 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             R.id.signup -> {
                 showLoginAuthDialog(Dialog.REGISTER) { login, password, name ->
                     viewModel.selectMyPage()
-                    appAuth.regNewUserWithoutAvatar(login, password, name) {
-                        showAuthDialog(it)
+                    appAuth.newUserRegistration(login, password, name, imgIri?.toString()) {
+                        showAuthResultDialog(it)
                         viewModel.markMyPageAlreadyOpened()
                     }
                 }
@@ -135,5 +145,21 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             else -> super.onOptionsItemSelected(item)
         }
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode == ImagePicker.RESULT_ERROR) {
+              //  Snackbar.make(it.root, ImagePicker.getError(data), Snackbar.LENGTH_LONG).show()
+            return
+        }
+        if (resultCode == Activity.RESULT_OK && requestCode ==
+            photoRequestCode )
+         {
+            data?.let { imgIri = it.data }
+            return
+        }
+    }
+
 }
 

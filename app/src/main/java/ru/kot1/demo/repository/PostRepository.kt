@@ -1,5 +1,6 @@
 package ru.kot1.demo.repository
 
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
@@ -8,6 +9,9 @@ import ru.kot1.demo.entity.EventEntity
 import ru.kot1.demo.entity.JobEntity
 import ru.kot1.demo.entity.PostEntity
 import ru.kot1.demo.entity.UserEntity
+import ru.kot1.demo.entity.forWorker.EventWorkEntity
+import ru.kot1.demo.viewmodel.CallbackR
+import java.io.File
 
 
 interface AppEntities : UserRepository, PostRepository, EventRepository, JobsRepository,
@@ -27,6 +31,7 @@ enum class RecordOperation {
 interface AppWork {
     fun saveViewPagerPageToPrefs(position: Int)
     fun getSavedViewPagerPage(): Int
+    fun download(url: String, destFile: File, answer: CallbackR<Byte>)
 }
 
 
@@ -35,10 +40,11 @@ interface AuthMethods {
     suspend fun checkConnection(): AppNetState
     suspend fun authUser(login: String, pass: String, function: (id: Long, token: String) -> Unit)
     suspend fun checkToken(): Boolean
-    suspend fun regNewUserWithoutAvatar(
+    suspend fun regNewUser(
         login: String,
         pass: String,
         name: String,
+        uri : String? = null,
         success: (id: Long, token: String) -> Unit
     )
 }
@@ -55,15 +61,24 @@ interface JobsRepository {
 interface EventRepository {
     val edata: Flow<PagingData<Event>>
     suspend fun getAllEvents()
-    fun processEventWork(task: Array<String>)
+    suspend fun processEventWork(task: Array<String>)
     suspend fun saveEventForWorker(event: Event, uri: String?, type: String?): Long
-    suspend fun getEventByIdFromDB(id: Long): EventEntity
+    suspend fun getEventByIdFromDB(id: Long): EventEntity?
+    suspend fun sendDeleteEvent(id: Long)
+    suspend fun prepareEventFromEntity(event: Event, operation: RecordOperation): Event
+    suspend fun sendWholeEventToServer(event: Event)
+    suspend fun likeEventById(id: Long)
+    suspend fun setDislikeToEventById(id: Long)
+    suspend fun participateToEvent(id: Long)
+    suspend fun doNotParticipateToEvent(id: Long)
+    suspend fun updateEvent(event: Event)
 }
 
 interface UserRepository {
     val udata: Flow<PagingData<User>>
     suspend fun getAllUsers()
     fun getUserById(id: Long): LiveData<List<UserEntity>>
+    suspend fun getAllUsersFromDB(): List<UserEntity>
 }
 
 
@@ -80,6 +95,6 @@ interface PostRepository {
     suspend fun processPostWork(task: Array<String>)
     suspend fun sendDeletePost(id: Long)
     suspend fun getPostById(id: Long): PostEntity
-
+    suspend fun updatePost(post: Post)
 }
 

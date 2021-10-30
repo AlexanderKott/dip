@@ -37,7 +37,7 @@
     <string name="tab_text_0">Моя страница</string>
     <string name="click_refresh">Произошла ошибка. Потяните вниз чтобы обновить страницу</string>
     <string name="error_occured">Ошибка получения данных</string>
-    <string name="seeEvents"><u>посмотреть событие</u></string>
+    <string name="seeEvents"><u>посмотреть события</u></string>
     <string name="enter_dialog">Авторизация</string>
     <string name="error_dialog_auth1">Нет соединения с интернет</string>
     <string name="error_dialog_auth2">Удаленный сервер не доступен</string>

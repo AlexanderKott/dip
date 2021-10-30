@@ -17,9 +17,7 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
-import ru.kot1.demo.BuildConfig
 import ru.kot1.demo.R
-import ru.kot1.demo.activity.utils.PagingLoadStateAdapter
 import ru.kot1.demo.adapter.jobs.JobAdapter
 import ru.kot1.demo.adapter.jobs.OnJobsInteractionListener
 import ru.kot1.demo.adapter.posts.OnInteractionListener
@@ -32,9 +30,7 @@ import ru.kot1.demo.view.load
 import javax.inject.Inject
 import android.content.Intent
 import android.net.Uri
-import ru.kot1.demo.activity.utils.Dialog
-import ru.kot1.demo.activity.utils.showAuthDialog
-import ru.kot1.demo.activity.utils.showLoginAuthDialog
+import ru.kot1.demo.activity.utils.*
 import ru.kot1.demo.viewmodel.*
 
 
@@ -45,6 +41,7 @@ class MyPageFragment : Fragment(R.layout.fragment_my_page) {
     private val viewModelallPosts: PostAllViewModel by activityViewModels()
     private val editPosts: EditPostViewModel by activityViewModels()
     private val editJobs: JobsViewModel by activityViewModels()
+    private val mwPostViewModel: MediaWorkPostViewModel by activityViewModels()
 
     @Inject
     lateinit var appAuth: AppAuth
@@ -57,23 +54,34 @@ class MyPageFragment : Fragment(R.layout.fragment_my_page) {
         val binding = FragmentMyPageBinding.bind(view)
         val postsAdapter = PostsAdapter(object : OnInteractionListener {
             override fun onNotLogined(post: Post) {
+                Toast.makeText(requireActivity(),
+                    getString(R.string.login_first_action),
+                    Toast.LENGTH_SHORT).show()
             }
 
-            override fun onVideoClick(post: Post) {
+            override fun onMediaPrepareClick(post: Post) {
+                mwPostViewModel.downloadMedia(post)
             }
 
-            override fun onAudioClick(post: Post) {
+            override fun onMediaReadyClick(post: Post) {
+                mwPostViewModel.openMedia(post.id){ file ->
+                    startActivity(Intent.createChooser(prepareIntent(file),
+                        getString(R.string.choose_app)))
+
+                }
             }
 
             override fun onPlaceClick(post: Post) {
                 val intent = Intent(
                     Intent.ACTION_VIEW,
-                    Uri.parse("geo:<" + post.coords?.lat.toString() +
-                            ">,<" + post.coords?.long.toString() +
-                            ">?q=<" + post.coords?.lat.toString() +
-                            ">,<" + post.coords?.long.toString() +
-                            ">(" + "The place" +
-                            ")")
+                    Uri.parse(
+                        "geo:<" + post.coords?.latitude.toString() +
+                                ">,<" + post.coords?.longitude.toString() +
+                                ">?q=<" + post.coords?.latitude.toString() +
+                                ">,<" + post.coords?.longitude.toString() +
+                                ">(" + getString(R.string.place)  +
+                                ")"
+                    )
                 )
                 startActivity(intent)
             }
@@ -82,23 +90,31 @@ class MyPageFragment : Fragment(R.layout.fragment_my_page) {
                 val bundle = Bundle()
                 bundle.putLong("post", post.id)
                 bundle.putInt("postPosition", position)
-                requireActivity().setTitle(R.string.edit_post)
                 setFragmentResult("keyNewPost", bundle)
 
             }
 
             override fun onLike(post: Post) {
-                viewModelallPosts.setLikeOrDislike(post)
+                viewModelallPosts.like(post)
 
             }
 
             override fun onRemove(post: Post) {
                 editPosts.deletePost(post.id)
+                mwPostViewModel.deleteFile(post)
             }
 
 
-
             override fun onShare(post: Post) {
+                val intent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_TEXT, post.content)
+                    type = "text/plain"
+                }
+
+                val shareIntent =
+                    Intent.createChooser(intent, getString(R.string.chooser_share_post))
+                startActivity(shareIntent)
             }
         })
 
@@ -138,13 +154,13 @@ class MyPageFragment : Fragment(R.layout.fragment_my_page) {
 
 
         editPosts.loadingPost.observe(viewLifecycleOwner) { position ->
-            if (position!= null) postsAdapter.disablePost(position)
+            if (position != null) postsAdapter.disablePost(position)
         }
 
         authViewModel.logined.observe(viewLifecycleOwner) { item ->
-            if (item == true && binding.groupNotLogined.isVisible){
-            binding.progressLogining.isVisible = true
-            binding.progressLogining.playAnimation()
+            if (item == true && binding.groupNotLogined.isVisible) {
+                binding.progressLogining.isVisible = true
+                binding.progressLogining.playAnimation()
             } else {
                 binding.progressLogining.isVisible = false
                 binding.progressLogining.cancelAnimation()
@@ -194,8 +210,8 @@ class MyPageFragment : Fragment(R.layout.fragment_my_page) {
         }
 
         binding.noprofile.setOnClickListener {
-           if (!binding.noprofile.isAnimating)
-               binding.noprofile.playAnimation()
+            if (!binding.noprofile.isAnimating)
+                binding.noprofile.playAnimation()
         }
 
 
@@ -203,17 +219,25 @@ class MyPageFragment : Fragment(R.layout.fragment_my_page) {
             appAuth.removeAuth()
         }
 
+        binding.newEvent.setOnClickListener {
+            val bundle = Bundle()
+            bundle.putLong("user", appAuth.myId)
+            bundle.putBoolean("edit", true)
+            setFragmentResult("keyEvents", bundle)
+            requireActivity().setTitle(R.string.tab_text_3)
+        }
+
         //Login Button
         binding.loginBtn.setOnClickListener {
             activity?.showLoginAuthDialog(Dialog.LOGIN) { login, password, _ ->
                 Handler(Looper.getMainLooper()).post {
-                    if(binding.groupNotLogined.isVisible){
-                    binding.progressLogining.isVisible = true
-                    binding.progressLogining.playAnimation()
+                    if (binding.groupNotLogined.isVisible) {
+                        binding.progressLogining.isVisible = true
+                        binding.progressLogining.playAnimation()
                     }
                 }
                 appAuth.authUser(login, password) {
-                    activity?.showAuthDialog(it)
+                    activity?.showAuthResultDialog(it)
                     Handler(Looper.getMainLooper()).post {
                         binding.progressLogining.cancelAnimation()
                         binding.progressLogining.isVisible = false
@@ -245,12 +269,12 @@ class MyPageFragment : Fragment(R.layout.fragment_my_page) {
         lifecycleScope.launchWhenCreated {
             postsAdapter.loadStateFlow.collectLatest { states ->
                 binding.swiperefresh.isRefreshing = states.refresh is LoadState.Loading
-                binding.progressWall.isVisible =  states.refresh is LoadState.Loading &&
+                binding.progressWall.isVisible = states.refresh is LoadState.Loading &&
                         binding.groupLogined.isVisible
 
                 if (states.refresh.endOfPaginationReached) {
                     binding.progressWall.isVisible = false
-                        if (postsAdapter.itemCount == 0) {
+                    if (postsAdapter.itemCount == 0) {
                         binding.noPostsL.isVisible = binding.groupLogined.isVisible
                         binding.postLst.isVisible = false
                     } else {
@@ -261,8 +285,6 @@ class MyPageFragment : Fragment(R.layout.fragment_my_page) {
                 }
             }
         }
-
-
 
 
         //progress view
@@ -286,7 +308,7 @@ class MyPageFragment : Fragment(R.layout.fragment_my_page) {
         viewModel.myInfoDataState.observe(viewLifecycleOwner) { users ->
             if (users.isNotEmpty()) {
                 binding.username.text = "Login: ${users[0].login}"
-                binding.ava.load("${BuildConfig.BASE_URL}/avatars/${users[0].avatar}")
+                binding.ava.load(users[0].avatar)
             }
         }
 

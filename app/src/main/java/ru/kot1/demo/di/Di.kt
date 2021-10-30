@@ -3,6 +3,7 @@ package ru.kot1.demo.di
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.work.WorkManager
+import com.localebro.okhttpprofiler.OkHttpProfilerInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -81,6 +82,7 @@ internal object ModuleForSingleton {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
+
     @Provides
     fun getPrefs(@ApplicationContext context: Context): SharedPreferences {
         return context.getSharedPreferences("authX", Context.MODE_PRIVATE)
@@ -100,6 +102,10 @@ internal object ModuleForSingleton {
                 return@addInterceptor chain.proceed(newRequest)
             }
             chain.proceed(chain.request())
+        }.apply {
+            if (BuildConfig.DEBUG) {
+                addInterceptor(OkHttpProfilerInterceptor())
+            }
         }
         .build()
 

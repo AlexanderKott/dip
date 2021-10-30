@@ -1,7 +1,8 @@
 package ru.kot1.demo.viewmodel
 
+import android.app.Application
 import android.util.Log
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import androidx.paging.map
@@ -11,6 +12,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import ru.kot1.demo.activity.utils.prepareFileName
 import ru.kot1.demo.auth.AppAuth
 import ru.kot1.demo.dto.Post
 import ru.kot1.demo.model.FeedModel
@@ -18,7 +20,9 @@ import ru.kot1.demo.model.FeedModelState
 import ru.kot1.demo.model.PostModel
 import ru.kot1.demo.model.SingleLiveEvent
 import ru.kot1.demo.repository.AppEntities
+import java.io.File
 import javax.inject.Inject
+
 
 
 @HiltViewModel
@@ -26,21 +30,17 @@ import javax.inject.Inject
 class PostAllViewModel @Inject constructor(
     var repository: AppEntities,
     var workManager: WorkManager,
-    var auth: AppAuth
-) : ViewModel() {
+    var auth: AppAuth,
+    var context: Application
+) : AndroidViewModel(context) {
 
-    val cachedposts = repository.pdata.cachedIn(viewModelScope)
+    private val cachedposts = repository.pdata.cachedIn(viewModelScope)
 
-    /*  val feedModels = cachedposts.map { pagingData ->
-          pagingData.map { post ->
-              PostModel(post = post) as FeedModel
-          }
-      }*/
 
-    val feedModels = auth.authStateFlow.flatMapLatest { logined ->
+    val feedModels = auth.authStateFlow.flatMapLatest { user ->
         cachedposts.map { pagingData ->
             pagingData.map { post ->
-                PostModel(post = post.copy(logined = logined.id != 0L)) as FeedModel
+                PostModel(post = post.copy(logined = user.id != 0L)) as FeedModel
             }
         }
     }
@@ -57,7 +57,6 @@ class PostAllViewModel @Inject constructor(
             repository.getAllPosts()
             _dataState.value = FeedModelState()
         } catch (e: Exception) {
-            Log.e("OkHttpClient", "execption ${e.cause}  ${e.message}")
             _dataState.value = FeedModelState(error = true)
         }
     }
@@ -73,13 +72,14 @@ class PostAllViewModel @Inject constructor(
     }
 
 
-    fun setLikeOrDislike(post: Post) = viewModelScope.launch {
+    fun like(post: Post) = viewModelScope.launch {
         if (post.likedByMe) {
             repository.disLikeById(post.id)
         } else {
             repository.likeById(post.id)
         }
     }
+
 
 }
 

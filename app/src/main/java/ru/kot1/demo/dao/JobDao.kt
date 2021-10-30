@@ -9,7 +9,7 @@ interface JobDao {
     @Query("SELECT * FROM JobEntity WHERE authorId = :id ORDER BY id DESC")
       fun getAllJobs(id: Long): PagingSource<Int,JobEntity>
 
-    @Query("SELECT * FROM JobEntity WHERE authorId = :id LIMIT 1")
+    @Query("SELECT * FROM JobEntity WHERE id = :id LIMIT 1")
     suspend fun getJobById(id: Long): JobEntity
 
     @Query("SELECT COUNT(*) == 0 FROM JobEntity")

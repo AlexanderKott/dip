@@ -9,10 +9,7 @@ import dagger.assisted.AssistedInject
 import ru.kot1.demo.error.UnknownError
 import ru.kot1.demo.repository.AppEntities
 
-/**
- * Это переодичный воркер, андроид ос сам его заускает когда приходит время
- * выставленное при его инициализации
- */
+
 @HiltWorker
 class SaveEventWorker  @AssistedInject constructor(
     @Assisted  applicationContext: Context,

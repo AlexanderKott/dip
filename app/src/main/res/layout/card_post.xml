@@ -59,7 +59,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="@string/description_post_menu"
-            android:visibility="gone"
+            android:visibility="visible"
             app:icon="@drawable/ic_more_vert_24dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -86,7 +86,7 @@
             tools:text="@sample/posts.json/data/content" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/OpenPlace"
+            android:id="@+id/open_place"
             style="@style/Widget.AppCompat.Button.Borderless.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -113,13 +113,13 @@
             app:layout_constraintBottom_toBottomOf="@+id/footer"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/OpenPlace"
+            app:layout_constraintTop_toBottomOf="@+id/content"
             app:layout_constraintVertical_bias="0.0"
             tools:srcCompat="@sample/posts.json/data/authorAvatar"
             tools:visibility="visible" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/MediaAttach"
+            android:id="@+id/media_attach"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -155,7 +155,7 @@
             android:layout_height="wrap_content"
             android:visibility="visible"
             app:barrierDirection="bottom"
-            app:constraint_referenced_ids="content,MediaAttach,progressWall, postPicture, OpenPlace"
+            app:constraint_referenced_ids="content,media_attach,progressWall, postPicture, open_place"
             tools:layout_editor_absoluteX="6dp"
             tools:layout_editor_absoluteY="316dp"
             tools:visibility="visible" />

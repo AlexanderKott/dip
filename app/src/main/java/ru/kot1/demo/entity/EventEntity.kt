@@ -10,19 +10,23 @@ import ru.kot1.demo.dto.Event
 @Entity
 data class EventEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Long,
     @Embedded
     val attachment: Attachment?,
     val author: String?,
     val authorAvatar: String?,
-    val authorId: Int,
+    val authorId: Long,
     val content: String?,
     val link: String?,
-    val published: Long,
-    val datetime : Long,
-    val speakerIds: List<String>?,
+    val published: String?,
+    val datetime : String?,
+    val speakerIds: List<Long>?,
     @ColumnInfo(name = "event_type")
-    val type: String?
+    val type: String?,
+    val likedByMe : Boolean,
+    val participatedByMe : Boolean,
+    val downloadingProgress : Byte?
+
 ){
     fun toDto() = Event(
         attachment,
@@ -35,7 +39,10 @@ data class EventEntity(
         published,
         datetime,
         speakerIds,
-        type
+        type,
+        likedByMe,
+        participatedByMe,
+        downloadingProgress
     )
 
     companion object {
@@ -50,7 +57,11 @@ data class EventEntity(
                 dto.published,
                 dto.datetime,
                 dto.speakerIds,
-                dto.type )
+                dto.type,
+                dto.likedByMe,
+                dto.participatedByMe,
+                dto.downloadingProgress
+            )
     }
 }
 

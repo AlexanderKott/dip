@@ -13,6 +13,7 @@ import androidx.fragment.app.activityViewModels
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import ru.kot1.demo.R
 import ru.kot1.demo.databinding.FragmentNewJobBinding
+import ru.kot1.demo.util.AndroidUtils
 import ru.kot1.demo.viewmodel.JobsViewModel
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -56,10 +57,9 @@ class NewJobFragment : Fragment() {
                     val from = it.timeFromL.text.toString()
                     val till = it.timeTillL.text.toString()
 
-                    if (cname.trim().isEmpty() || pos.trim().isEmpty()
-                        || !fromSet || !tillSet) {
-                        Toast.makeText(requireContext(), "Fill in all fields", Toast.LENGTH_SHORT)
-                            .show()
+                    if (cname.trim().isEmpty() || pos.trim().isEmpty() || !fromSet || !tillSet) {
+                        Toast.makeText(requireContext(), R.string.fill_in_all_fileds,
+                            Toast.LENGTH_LONG).show()
                         return false
                     }
 
@@ -69,7 +69,11 @@ class NewJobFragment : Fragment() {
                         dateFormat.parse(from).time,
                         dateFormat.parse(till).time)
 
-                    activity?.onBackPressed()
+                    Toast.makeText(requireContext(), R.string.job_soon,
+                        Toast.LENGTH_SHORT).show()
+
+                    AndroidUtils.hideKeyboard(requireView())
+                    activity?.supportFragmentManager?.popBackStack()
                 }
 
                 true
@@ -84,6 +88,7 @@ class NewJobFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         jobId = arguments?.getLong("jobId", 0L) ?: 0L
+        (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         viewModel.loadThisJobToUI(jobId)
 

@@ -1,16 +1,14 @@
 package ru.kot1.demo.viewmodel
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.*
 import androidx.work.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import ru.kot1.demo.auth.AppAuth
-import ru.kot1.demo.dto.Coords
-import ru.kot1.demo.dto.EventUI
-import ru.kot1.demo.dto.JobUI
-import ru.kot1.demo.dto.empty
+import ru.kot1.demo.dto.*
 import ru.kot1.demo.enumeration.AttachmentType
 import ru.kot1.demo.model.*
 import ru.kot1.demo.repository.AppEntities
@@ -30,7 +28,7 @@ class EditPostViewModel @Inject constructor(
     var auth: AppAuth
 ) : ViewModel() {
 
-    private val edited = MutableLiveData(empty)
+    val edited = MutableLiveData(empty)
 
     private var positionOfLoadingPost :Int = -1
 
@@ -42,16 +40,15 @@ class EditPostViewModel @Inject constructor(
     val attach: LiveData<PreparedData?>
         get() = _attach
 
+    private var _coords = MutableLiveData<Coords?>(null)
 
-    private val _coords = MutableLiveData<Coords?>(null)
     val coords: LiveData<Coords?>
         get() = _coords
+
 
     private val _postText = MutableLiveData<String?>()
     val postText: LiveData<String?>
         get() = _postText
-
-
 
 
     private var operation: RecordOperation = RecordOperation.NEW_RECORD
@@ -66,6 +63,11 @@ class EditPostViewModel @Inject constructor(
                        if (positionOfLoadingPost!= -1) { loadingPost.value = positionOfLoadingPost }
                         it.toString()
                     }
+
+
+                    Log.e("ssss", "save lat ${_coords.value?.latitude}")
+                    Log.e("ssss", "save long ${_coords.value?.longitude}")
+
                     val id : Long =
                         repository.savePostForWorker(
                             post.copy(coords = _coords.value),uri, type)
@@ -79,7 +81,7 @@ class EditPostViewModel @Inject constructor(
         }
         edited.value = empty
         _attach.value = null
-        _coords.value = null
+      ///  _coords.value = null
         _postText.value = null
         positionOfLoadingPost = -1
     }
@@ -91,6 +93,10 @@ class EditPostViewModel @Inject constructor(
             val post = repository.getPostById(id).toDto()
             edited.value = post
             _coords.value = post.coords
+
+            Log.e("ssss", "open lat ${_coords.value?.latitude}")
+            Log.e("ssss", "open long ${_coords.value?.longitude}")
+
             _postText.value = post.content
 
             if (post.attachment != null) {
@@ -127,10 +133,23 @@ class EditPostViewModel @Inject constructor(
 
     fun preparePostCoords(newCoords: Coords?) {
         _coords.value = newCoords
+        Log.e("ssss", "set lat ${_coords.value?.latitude}")
+        Log.e("ssss", "set long ${_coords.value?.longitude}")
+    }
+
+    fun removePostCoords() {
+        Log.e("ssss", "delete alt long")
+       // _coords.value = null
+    }
+
+    fun getPostCoords(): Coords {
+        Log.e("ssss", "get lat ${_coords.value?.latitude}")
+        Log.e("ssss", "get long ${_coords.value?.longitude}")
+
+        return _coords.value ?: Coords(0F, 0F)
     }
 
     fun preparePostText(content: String) {
-
         edited.value = edited.value?.copy(content = content)
     }
 
@@ -143,10 +162,9 @@ class EditPostViewModel @Inject constructor(
         operation = RecordOperation.NEW_RECORD
         edited.value = empty
         _attach.value = null
-        _coords.value = null
+     //  _coords.value = null
         _postText.value = ""
     }
-
 
 
 }

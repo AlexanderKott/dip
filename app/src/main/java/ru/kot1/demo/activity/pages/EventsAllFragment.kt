@@ -1,29 +1,42 @@
 package ru.kot1.demo.activity.pages
 
+import android.content.Intent
 import android.graphics.Rect
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import ru.kot1.demo.R
 import ru.kot1.demo.activity.utils.PagingLoadStateAdapter
+import ru.kot1.demo.activity.utils.prepareIntent
 import ru.kot1.demo.adapter.events.EventsAdapter
 import ru.kot1.demo.adapter.events.OnEventsInteractionListener
 import ru.kot1.demo.databinding.FragmentEventsBinding
 import ru.kot1.demo.dto.Event
+import ru.kot1.demo.viewmodel.EditEventViewModel
 import ru.kot1.demo.viewmodel.EventAllViewModel
+import ru.kot1.demo.viewmodel.MediaWorkEventViewModel
 
 class EventsAllFragment : Fragment() {
     private val viewModel: EventAllViewModel by activityViewModels()
+    private val edViewModel: EditEventViewModel by activityViewModels()
+    private val mwViewModel: MediaWorkEventViewModel by activityViewModels()
+
+
+
     private var _binding: FragmentEventsBinding? = null
 
     override fun onDestroyView() {
@@ -41,21 +54,55 @@ class EventsAllFragment : Fragment() {
         return _binding!!.root
     }
 
+    @ExperimentalPagingApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val adapter = EventsAdapter(object : OnEventsInteractionListener {
-            override fun onEdit(user: Event) {
+            override fun onLinkClick(event: Event) {
+                val i = Intent(Intent.ACTION_VIEW)
+                i.data = Uri.parse(event.link)
+                startActivity(i)
             }
 
-            override fun onLike(user: Event) {
+            override fun onMediaPrepareClick(event: Event) {
+                mwViewModel.downloadMedia(event)
             }
 
-            override fun onRemove(user: Event) {
+            override fun onMediaReadyClick(event: Event) {
+                mwViewModel.openMedia(event.id){ file ->
+                    startActivity(
+                        Intent.createChooser(prepareIntent(file),
+                        getString(R.string.choose_app)))
+
+                }
+            }
+
+            override fun onLike(event: Event) {
+                edViewModel.setLikeOrDislike(event)
             }
 
 
-            override fun onShare(user: Event) {
+            override fun onShare(event: Event) {
+                val intent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_TEXT, event.content)
+                    type = "text/plain"
+                }
 
+                val shareIntent =
+                    Intent.createChooser(intent, getString(R.string.chooser_share_post))
+                startActivity(shareIntent)
+
+            }
+
+            override fun notLogined(event: Event) {
+                Toast.makeText(requireActivity(),
+                    getString(R.string.login_first_action),
+                    Toast.LENGTH_SHORT).show()
+            }
+
+            override fun participate(event: Event) {
+                edViewModel.participate(event)
             }
         })
 
@@ -67,6 +114,7 @@ class EventsAllFragment : Fragment() {
             )
 
 
+        (_binding?.elist?.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
 
         val offesetH = resources.getDimensionPixelSize(R.dimen.common_spacing)
         _binding?.elist?.addItemDecoration(
@@ -100,7 +148,7 @@ class EventsAllFragment : Fragment() {
         }
 
         lifecycleScope.launchWhenCreated {
-            viewModel.cachedevents.collectLatest {
+            viewModel.events().collectLatest {
                 adapter.submitData(it)
 
             }
