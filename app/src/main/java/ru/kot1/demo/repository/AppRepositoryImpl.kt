@@ -38,7 +38,8 @@ import java.util.*
 class AppRepositoryImpl(
     private val base: AppDb,
     private val api: ApiService,
-    private val context: Context
+    private val context: Context,
+    private val client : OkHttpClient
 ) : AppEntities {
 
     // --------------  Fragments  All Posts, All Users, All Events ------------------------
@@ -202,7 +203,6 @@ class AppRepositoryImpl(
             .build().part(0)
 
             if (uri != null) {
-                Log.e("ssss", "uri== ${uri}")
                 val uploadMedia = MediaUpload(Uri.parse(uri).toFile())
                  media = MultipartBody.Part.createFormData(
                     "file", uploadMedia.file.name, uploadMedia.file.asRequestBody())
@@ -422,8 +422,6 @@ class AppRepositoryImpl(
 
     override suspend fun sendWholePostToServer(post: Post) {
         tryCatchWrapper(object {}.javaClass.enclosingMethod.name) {
-            Log.e("ssss", "work lat ${post.coords?.latitude}")
-            Log.e("ssss", "work long ${post.coords?.longitude}")
 
             val response = api.savePost(post)
 
@@ -504,7 +502,6 @@ class AppRepositoryImpl(
             val entity = base.eventWorkDao().getById(id)
 
             val event = prepareEventFromEntity(entity.toDto(), operation)
-            Log.e("ssss", "-++-2link= ${event.link}")
 
             //upload new attach and post to server
             if (entity.mediaUri != null && entity.mediaType != null) {
@@ -621,11 +618,8 @@ class AppRepositoryImpl(
 
 
 //--------------------------------------------------------------------------------
-val client = OkHttpClient()
-
     override fun download(url: String, destFile: File, answer : CallbackR<Byte>) {
     val request: Request = Request.Builder().url(url).build()
-
 
     client.newCall(request).enqueue(object : Callback {
         override fun onFailure(call: Call, e: IOException) {
@@ -653,10 +647,7 @@ val client = OkHttpClient()
             source.close()
         }
     })
-
-
 }
-
 
     override suspend fun updatePost(post: Post) {
         tryCatchWrapper(object {}.javaClass.enclosingMethod.name) {
@@ -670,6 +661,4 @@ val client = OkHttpClient()
             base.eventDao().insert(EventEntity.fromDto(event))
         }
     }
-
-
 }

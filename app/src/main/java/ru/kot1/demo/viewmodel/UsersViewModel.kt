@@ -26,6 +26,7 @@ class UsersViewModel @Inject constructor(var repository: AppEntities,
     val dataState: SingleLiveEvent<FeedModelState>
         get() = _dataState
 
+
     fun loadUsers() = viewModelScope.launch {
         try {
             _dataState.value = FeedModelState(loading = true)
@@ -35,8 +36,6 @@ class UsersViewModel @Inject constructor(var repository: AppEntities,
             _dataState.value = FeedModelState(error = true)
         }
     }
-
-
 
 
 }

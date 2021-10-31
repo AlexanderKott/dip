@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">N-Demo Blog</string>
+    <string name="app_name" translatable="false">K-Demo Blog</string>
     <string name="description_post_author_avatar">Post author avatar</string>
     <string name="description_post_menu">Post menu</string>
     <string name="description_post_like">Like</string>
@@ -30,7 +30,7 @@
     <string name="tab_text_1">Users</string>
     <string name="tab_text_2">Posts</string>
     <string name="tab_text_3">Events</string>
-    <string name="tab_text_4">Jobs</string>
+    <string name="tab_text_4">About</string>
     <string name="empty_records">No records</string>
     <string name="tab_text_0">My page</string>
     <string name="login_first">To see your page login first</string>
@@ -51,15 +51,14 @@
     <string name="attach">Attach:</string>
     <string name="add_place">Add place:</string>
     <string name="description_select_place">set a place</string>
-    <string name="no_inet">\"No internet\"</string>
+    <string name="no_inet">No internet</string>
     <string name="server_unavable">Server is unavailable</string>
     <string name="write_your_post">Write your post</string>
     <string name="edit_post">Edit post</string>
     <string name="enter_anything">Enter anything to save</string>
-    <string name="WorfFrom">Работал с</string>
-    <string name="workTill">по</string>
-    <string name="workPosition">Должность</string>
-    <string name="companyname">Компания</string>
+    <string name="workTill">to</string>
+    <string name="workPosition">Position</string>
+    <string name="companyname">Company</string>
     <string name="menu_job_edit">edit</string>
     <string name="new_job">Create New Job</string>
     <string name="edit_job">Edit Job</string>
@@ -72,7 +71,7 @@
     <string name="edit_event">Edit Event</string>
     <string name="online">online</string>
     <string name="offline">offline</string>
-    <string name="enter_anything_event">Enter 1) event text \n 2) Event date \n 3) Event type \n 4) Event link</string>
+    <string name="enter_anything_event">Enter:\n1) event text \n 2) Event date \n 3) Event type \n 4) Event link</string>
     <string name="toParticipate">Participate</string>
     <string name="you_going_to">You going to participate</string>
     <string name="format">Format: %1$s</string>
@@ -91,4 +90,29 @@
     <string name="fill_in_all_fileds">Fill in all fields</string>
     <string name="choose_place">Choose place</string>
     <string name="pick_point_on_map">Please pick point on the map</string>
+    <string name="about" translatable="false">
+                <u>Demo Blogger Application v.1.0</u>\n
+ Created by Kotikov Alexander\n
+ Icons made by <a href="https://www.flaticon.com/authors/icon-pond" title="Icon Pond">Icon Pond</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
+        \n\nThis application is to show Retrofit work:\n  app &#171; -- &#187; Heroku
+        \n\n Imagine there are bloggers who uses this application. They create Posts with
+        attached text, images, videos and music.(Create, Edit, Delete). They can create Events also,
+        registered users can participate and click likes. The bloggers can add
+        information about their jobs or projects.
+        \n The application can work offline.
+
+        \n\n Used stack: Coroutines, Retrofit, WorkManager, OkHttp, MVVM, Dagger2/Hilt, Room, Yandex Maps, Glide.
+        \nThe application design inspired by YouTube.
+        \n\n Thanks for reading
+
+    </string>
+    <string name="aboutLink">To see what this application is about, click About tab</string>
+    <string name="WorkFrom">Worked from</string>
+    <string name="type_password">Password</string>
+    <string name="password_again">Password \nagain</string>
+    <string name="login">login</string>
+    <string name="name">Name</string>
+    <string name="ok">OK</string>
+    <string name="cancel">cancel</string>
+    <string name="Passwords_do_not_match">Passwords do not match</string>
 </resources>

@@ -96,7 +96,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/WorfFrom"
+            android:text="@string/WorkFrom"
             app:layout_constraintStart_toStartOf="@+id/jpositionL"
             app:layout_constraintTop_toBottomOf="@+id/jpositionL" />
 

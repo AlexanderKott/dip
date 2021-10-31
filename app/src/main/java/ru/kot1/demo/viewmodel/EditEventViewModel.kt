@@ -1,7 +1,6 @@
 package ru.kot1.demo.viewmodel
 
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.*
 import androidx.work.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,12 +14,9 @@ import ru.kot1.demo.enumeration.AttachmentType
 import ru.kot1.demo.model.*
 import ru.kot1.demo.repository.AppEntities
 import ru.kot1.demo.repository.RecordOperation
-import ru.kot1.demo.util.SingleLiveEvent
 import ru.kot1.demo.work.SaveEventWorker
 import java.util.*
 import javax.inject.Inject
-
-
 
 
 @HiltViewModel
@@ -45,7 +41,7 @@ class EditEventViewModel @Inject constructor(
     val eventText: LiveData<String?>
         get() = _eventText
 
-    private var operation = RecordOperation.NEW_RECORD
+    private var _operation = RecordOperation.NEW_RECORD
 
     fun save() {
         edited.value?.let { event ->
@@ -56,15 +52,16 @@ class EditEventViewModel @Inject constructor(
                         it.toString()
                     }
 
-                    val id : Long =
+                    val id: Long =
                         repository.saveEventForWorker(
                             event.copy(
                                 speakerIds = mutableListOf(auth.authStateFlow.value.id),
                                 published = Date().toInstant().toString(),
 
-                            ),uri, type)
+                                ), uri, type
+                        )
 
-                    initWorkManager(id, operation)
+                    initWorkManager(id, _operation)
 
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -77,13 +74,13 @@ class EditEventViewModel @Inject constructor(
     }
 
 
-    fun deleteEvent(id: Long){
+    fun deleteEvent(id: Long) {
         initWorkManager(id, RecordOperation.DELETE_RECORD)
     }
 
     private fun initWorkManager(id: Long, operation: RecordOperation) {
         val data = workDataOf(
-            SaveEventWorker.postKey to arrayOf(operation.toString(),"$id")
+            SaveEventWorker.postKey to arrayOf(operation.toString(), "$id")
         )
 
         val constraints = Constraints.Builder()
@@ -107,27 +104,24 @@ class EditEventViewModel @Inject constructor(
     }
 
 
-    fun prepareEvent(id :Long) = viewModelScope.launch {
+    fun prepareEvent(id: Long) = viewModelScope.launch {
         if (id != 0L) {
             val event = repository.getEventByIdFromDB(id)
-            operation = RecordOperation.CHANGE_RECORD
+            _operation = RecordOperation.CHANGE_RECORD
             edited.value = event?.toDto()
-            Log.e("ssss", "type= ${event?.toDto()?.type}")
-            Log.e("ssss", "datetime= ${event?.toDto()?.datetime}")
-            Log.e("ssss", "--link= ${event?.toDto()?.link}")
 
             _eventText.value = event?.content
 
             if (event?.attachment != null) {
                 _attach.value = PreparedData(
                     null,
-                    AttachmentType.valueOf(event?.attachment.type)
+                    AttachmentType.valueOf(event.attachment.type)
                 )
             } else {
                 _attach.value = null
             }
         } else {
-            operation = RecordOperation.NEW_RECORD
+            _operation = RecordOperation.NEW_RECORD
             edited.value = emptyEvent
             _attach.value = null
             _eventText.value = ""
@@ -137,7 +131,6 @@ class EditEventViewModel @Inject constructor(
 
     fun prepareLink(linkx: String) {
         edited.value = edited.value?.copy(link = linkx)
-        Log.e("ssss", "linkx= ${edited.value?.link}")
     }
 
     fun prepareType(type: String) {
@@ -148,13 +141,7 @@ class EditEventViewModel @Inject constructor(
         edited.value = edited.value?.copy(datetime = date)
     }
 
-    fun dataIsCorrect() : Boolean{
-        Log.e("ssss", "+type= ${edited.value?.type}")
-        Log.e("ssss", "datetime= ${edited.value?.datetime}")
-        Log.e("ssss", "content= ${edited.value?.content}")
-        Log.e("ssss", "link= ${edited.value?.link}")
-
-
+    fun dataIsCorrect(): Boolean {
         return !edited.value?.link.isNullOrBlank() &&
                 !edited.value?.type.isNullOrBlank() &&
                 !edited.value?.datetime.isNullOrBlank() &&
@@ -171,7 +158,6 @@ class EditEventViewModel @Inject constructor(
     }
 
 
-
     fun participate(event: Event) = viewModelScope.launch {
         if (event.participatedByMe) {
             repository.doNotParticipateToEvent(event.id)
@@ -179,8 +165,6 @@ class EditEventViewModel @Inject constructor(
             repository.participateToEvent(event.id)
         }
     }
-
-
 }
 
 

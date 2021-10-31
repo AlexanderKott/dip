@@ -20,6 +20,7 @@ import ru.kot1.demo.auth.AppAuth
 import ru.kot1.demo.db.AppDb
 import ru.kot1.demo.repository.*
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 
@@ -38,7 +39,7 @@ internal object ModuleForViewModel {
 internal object ModuleForSingleton {
 
     private const val BASE_URL = "${BuildConfig.BASE_URL}/api/"
-// /api/slow/"
+    // /api/slow/"
 
 
     @Singleton
@@ -46,18 +47,17 @@ internal object ModuleForSingleton {
     fun getPostRepository(
         db: AppDb,
         api: ApiService,
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        @Named("DownloadClient") downloadClient: OkHttpClient
     ): AppEntities =
-        AppRepositoryImpl(db, api, context)
+        AppRepositoryImpl(db, api, context, downloadClient)
 
     @Singleton
     @Provides
     fun getRepositoryInet(repo: AppEntities) = repo as AuthMethods
 
-
     @Provides
     fun getAppDb(@ApplicationContext context: Context) = AppDb.getInstance(context = context)
-
 
     @Singleton
     @Provides
@@ -76,7 +76,7 @@ internal object ModuleForSingleton {
 
 
     @Provides
-    fun getRetrofit(okhttp: OkHttpClient) = Retrofit.Builder()
+    fun getRetrofit(@Named("ApiClient") okhttp: OkHttpClient ) = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .client(okhttp)
         .addConverterFactory(GsonConverterFactory.create())
@@ -88,7 +88,16 @@ internal object ModuleForSingleton {
         return context.getSharedPreferences("authX", Context.MODE_PRIVATE)
     }
 
-    @Provides
+
+    @Provides @Named("DownloadClient")
+    fun getDownloadingClient() = OkHttpClient.Builder()
+    .connectTimeout(55, TimeUnit.SECONDS)
+    .writeTimeout(30, TimeUnit.SECONDS)
+    .readTimeout(30, TimeUnit.SECONDS)
+    .build()
+
+
+    @Provides @Named("ApiClient")
     fun getService(prefs: SharedPreferences) = OkHttpClient.Builder()
         .connectTimeout(55, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)

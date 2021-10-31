@@ -54,7 +54,7 @@ class UsersAdapter(
                 if (item != null) {
                     holder.bind(item)
                 } else {
-                    Log.e("ssss", "xxxx null")
+                    Log.e("exc", "users onBindViewHolder error")
                 }
             }
 
@@ -72,7 +72,6 @@ class UserViewHolder(
         binding.apply {
             userInfo.text = user.name
             userid.text = "#${user.id}"
-            Log.e("ssss", "ava = ${user.avatar}")
             avatar.loadX(
                 user.avatar,
                 RequestOptions()

@@ -41,10 +41,7 @@ class JobsViewModel @Inject constructor(
     val dataState: SingleLiveEvent<FeedModelState>
         get() = _dataState
 
-    //private var usedId = 0L
     private val userId = MutableStateFlow<Long>(0)
-
-    private var operation: RecordOperation = RecordOperation.NEW_RECORD
 
     @ExperimentalPagingApi
     val pagedFlowJobs = userId.flatMapLatest { value ->
@@ -61,7 +58,6 @@ class JobsViewModel @Inject constructor(
     private val _loadJob = SingleLiveEvent<JobUI>()
     val loadJob: SingleLiveEvent<JobUI>
         get() = _loadJob
-
 
 
     fun refreshJobs() {
@@ -96,7 +92,6 @@ class JobsViewModel @Inject constructor(
         } catch (e: Exception) {
           }
     }
-
 
 
     private fun initWorkManager(id: Int, operation: RecordOperation) {

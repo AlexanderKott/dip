@@ -19,14 +19,14 @@
             android:layout_height="wrap_content"
             android:visibility="gone"
             app:constraint_referenced_ids="jobLst,div1,div2,postLst,myPosts,myJobs,newJob,newPost,materialCardView"
-            tools:visibility="visible" />
+            tools:visibility="gone" />
 
         <androidx.constraintlayout.widget.Group
             android:id="@+id/groupNotLogined"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="visible"
-            app:constraint_referenced_ids="loginFirst, progressLogining, noprofile,loginBtn"
+            app:constraint_referenced_ids="loginFirst, aboutL, progressLogining, noprofile,loginBtn"
             tools:visibility="gone" />
 
         <androidx.constraintlayout.widget.Group
@@ -66,7 +66,7 @@
             app:layout_constraintStart_toStartOf="@+id/loginFirst"
             app:lottie_autoPlay="true"
             app:lottie_loop="false"
-            app:lottie_rawRes="@raw/packag" />
+            app:lottie_rawRes="@raw/lottie_packag" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/loginBtn"
@@ -99,7 +99,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.47000003" />
+            app:layout_constraintVertical_bias="0.39" />
 
         <ProgressBar
             android:id="@+id/progressWall"
@@ -133,7 +133,7 @@
             app:layout_constraintTop_toBottomOf="@+id/loginBtn"
             app:lottie_autoPlay="false"
             app:lottie_loop="true"
-            app:lottie_rawRes="@raw/loading"
+            app:lottie_rawRes="@raw/lottie_loading"
             tools:visibility="visible" />
 
         <View
@@ -329,6 +329,18 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/myJobs"
             tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/aboutL"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:inputType="textMultiLine"
+            android:padding="10dp"
+            android:text="@string/aboutLink"
+            app:layout_constraintEnd_toEndOf="@+id/progressLogining"
+            app:layout_constraintStart_toStartOf="@+id/progressLogining"
+            app:layout_constraintTop_toBottomOf="@+id/progressLogining" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

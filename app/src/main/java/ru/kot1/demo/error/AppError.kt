@@ -20,4 +20,3 @@ object DbError : AppError("error_db")
 object UnknownError : AppError("error_unknown")
 
 
-class FragmentInitError() : RuntimeException()

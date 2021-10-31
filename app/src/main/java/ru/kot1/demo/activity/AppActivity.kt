@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import com.github.dhaval2404.imagepicker.ImagePicker
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import ru.kot1.demo.R
 import ru.kot1.demo.activity.editors.MapPickerFragment
@@ -42,13 +43,11 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setSupportActionBar((findViewById(R.id.toolbar)))
-
+        setSupportActionBar(findViewById(R.id.toolbar))
 
         viewModel.authData.observe(this) {
             invalidateOptionsMenu()
         }
-
 
         with(supportFragmentManager) {
             setFragmentResultListener("keyMainFragment", this@AppActivity) { _, bundle ->
@@ -148,14 +147,11 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
         if (resultCode == ImagePicker.RESULT_ERROR) {
-              //  Snackbar.make(it.root, ImagePicker.getError(data), Snackbar.LENGTH_LONG).show()
+                Snackbar.make(findViewById(R.id.root), ImagePicker.getError(data), Snackbar.LENGTH_LONG).show()
             return
         }
-        if (resultCode == Activity.RESULT_OK && requestCode ==
-            photoRequestCode )
-         {
+        if (resultCode == Activity.RESULT_OK && requestCode ==  photoRequestCode ){
             data?.let { imgIri = it.data }
             return
         }

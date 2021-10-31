@@ -10,6 +10,7 @@ import ru.kot1.demo.activity.pages.*
     R.string.tab_text_1,
     R.string.tab_text_2,
     R.string.tab_text_3,
+    R.string.tab_text_4,
 )
 
 val  TAB_ICONS = arrayOf(
@@ -17,6 +18,7 @@ val  TAB_ICONS = arrayOf(
     R.drawable.users,
     R.drawable.posts,
     R.drawable.events,
+    R.drawable.ic_about,
 )
 
 
@@ -30,6 +32,7 @@ class SectionsPagerAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) 
            1 -> UsersFragment()
            2 -> PostsAllFragment()
            3 -> EventsAllFragment()
+           4 -> AboutFragment()
            else -> throw  UnsupportedClassVersionError()
        }
     }

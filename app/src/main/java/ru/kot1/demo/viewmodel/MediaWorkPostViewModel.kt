@@ -39,16 +39,7 @@ class MediaWorkPostViewModel @Inject constructor(
     var context: Application
 ) : AndroidViewModel(context) {
 
-
-
-
-
-
-
-
-
     private val files = HashMap<Long, File>()
-
 
     fun downloadMedia(post: Post) {
         if (post.attachment == null) {
@@ -98,9 +89,9 @@ class MediaWorkPostViewModel @Inject constructor(
         outputFile.setReadable(true, false)
 
         if (outputFile.exists()) {
-            Log.e("exc", "file was= ${outputFile.delete()}")
-
+             outputFile.delete()
         }
+
     }
 
 }

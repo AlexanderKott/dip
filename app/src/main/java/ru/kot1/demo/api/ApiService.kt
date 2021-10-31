@@ -8,7 +8,7 @@ import ru.kot1.demo.dto.*
 
 interface ApiService {
 
-    //---  user login
+    //USER auth and login
     @Headers("Content-Type: application/x-www-form-urlencoded")
     @POST("users/authentication")
     suspend fun authMe (@Query("login") login: String,@Query("pass") pass: String)
@@ -23,7 +23,7 @@ interface ApiService {
     )
             : Response<AuthState>
 
-    // check am I authenticatificated
+    // trick to check am I authenticatificated
     @POST("posts/-555/likes")
     suspend fun checkToken(): Response<Unit>
 
@@ -37,6 +37,7 @@ interface ApiService {
 
     @GET("{id}/jobs")
     suspend fun getJobs(@Path("id") id : Long): Response<List<Job>>
+
 
 
 
@@ -64,6 +65,7 @@ interface ApiService {
 
     @DELETE  ("events/{id}/participants")
     suspend fun doNotParticipateToEvent(@Path("id") id: Long): Response<Event>
+
 
 
 

@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltAndroidApp
-class DemoApplication : Application() , Configuration.Provider {
+class DemoApplication : Application(), Configuration.Provider {
     private val appScope = CoroutineScope(Dispatchers.Default)
 
     override fun onCreate() {
@@ -25,21 +25,17 @@ class DemoApplication : Application() , Configuration.Provider {
 
     private fun getKey() = BuildConfig.MAPKEY
 
-
     private fun setupWork() {
-
-        //Здесь мы иницаилизируем класс воркера, заставляя его запускаться каждую минуту
         appScope.launch {
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
-            //тут класс его указываем
-            val request = PeriodicWorkRequestBuilder<RefreshPostsWorker>(1, TimeUnit.MINUTES)
+
+            val request = PeriodicWorkRequestBuilder<RefreshPostsWorker>(30, TimeUnit.MINUTES)
                 .setConstraints(constraints)
                 .build()
 
-            //запускаем!
-             WorkManager.getInstance(this@DemoApplication).enqueueUniquePeriodicWork(
+            WorkManager.getInstance(this@DemoApplication).enqueueUniquePeriodicWork(
                 RefreshPostsWorker.name,
                 ExistingPeriodicWorkPolicy.KEEP,
                 request

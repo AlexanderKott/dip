@@ -113,11 +113,11 @@ class MyPageViewModel @Inject constructor(var repository: AppEntities,
 
     private fun loadUsers() = viewModelScope.launch {
         try {
-           // _postsDataState.value = FeedModelState(loading = true)
+            _postsDataState.value = FeedModelState(loading = true)
             repository.getAllUsers()
-           // _postsDataState.value = FeedModelState()
+            _postsDataState.value = FeedModelState()
         }   catch (e: Exception) {
-            //_postsDataState.value = FeedModelState(error = true)
+            _postsDataState.value = FeedModelState(error = true)
         }
     }
 

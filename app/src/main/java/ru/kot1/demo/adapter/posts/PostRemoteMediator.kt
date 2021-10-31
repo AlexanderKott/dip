@@ -49,7 +49,6 @@ class PostRemoteMediator(private val api: ApiService,
                 }
 
                 if (!response.isSuccessful) {
-                    Log.e("OkHttpClient", "remote mediator ApiError")
                     throw ApiError(response.code(), response.message())
                 }
 
@@ -59,7 +58,6 @@ class PostRemoteMediator(private val api: ApiService,
                 )
 
                 if (body.isEmpty()) {
-                    Log.e("OkHttpClient", "remote mediator success")
                     return MediatorResult.Success(true)
 
                 }
@@ -115,7 +113,6 @@ class PostRemoteMediator(private val api: ApiService,
                 return MediatorResult.Success(true)
             }
         } catch (e: Exception){
-            Log.e("OkHttpClient", "posts remote mediator Exception")
            return MediatorResult.Error(e)
         }
     }

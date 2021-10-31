@@ -13,9 +13,6 @@ import ru.kot1.demo.repository.AppEntities
 import javax.inject.Inject
 
 
-
-
-//Это вьюмодел заинжекчена без конструктора. даггер сам ее создает
 @HiltViewModel
 @ExperimentalCoroutinesApi
 class PostViewModel @Inject constructor(var repository: AppEntities ,

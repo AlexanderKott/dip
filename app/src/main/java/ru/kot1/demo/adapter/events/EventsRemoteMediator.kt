@@ -51,7 +51,7 @@ class EventsRemoteMediator(private val api: ApiService,
                 return MediatorResult.Success(true)
             }
         } catch (e: Exception){
-            Log.e("OkHttpClient", "remote mediator Exception")
+            Log.e("exc", "events remote mediator Exception")
            return MediatorResult.Error(e)
         }
     }

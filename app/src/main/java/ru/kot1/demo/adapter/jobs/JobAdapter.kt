@@ -51,7 +51,7 @@ class JobAdapter(
                 if (item != null) {
                     holder.bind(item)
                 } else {
-                    Log.e("ssss", "xxxx null")
+                    Log.e("exc", "job onBindViewHolder error")
                 }
             }
 

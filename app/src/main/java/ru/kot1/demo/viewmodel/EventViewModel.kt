@@ -1,29 +1,24 @@
 package ru.kot1.demo.viewmodel
 
-import android.util.Log
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.paging.*
-import androidx.work.*
+import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import ru.kot1.demo.adapter.events.EventsRemoteMediator
-import ru.kot1.demo.adapter.jobs.JobsRemoteMediator
 import ru.kot1.demo.api.ApiService
 import ru.kot1.demo.auth.AppAuth
 import ru.kot1.demo.db.AppDb
 import ru.kot1.demo.dto.Event
-import ru.kot1.demo.dto.User
 import ru.kot1.demo.entity.UserEntity
-import ru.kot1.demo.model.*
+import ru.kot1.demo.model.FeedModelState
+import ru.kot1.demo.model.SingleLiveEvent
 import ru.kot1.demo.repository.AppEntities
 import ru.kot1.demo.repository.AuthMethods
-import java.util.*
 import javax.inject.Inject
-
-
 
 
 @HiltViewModel
@@ -42,8 +37,6 @@ class EventViewModel @Inject constructor(var repository: AppEntities,
         get() = _dataState
 
     private val userId = MutableStateFlow<Long>(0)
-
-
 
     @ExperimentalPagingApi
     suspend fun events(): Flow<PagingData<Event>> {
@@ -72,8 +65,6 @@ class EventViewModel @Inject constructor(var repository: AppEntities,
             }.cachedIn(viewModelScope).flowOn(Dispatchers.Default)
         }
     }
-
-
 
 
     fun loadEventsForUser(it: Long) {

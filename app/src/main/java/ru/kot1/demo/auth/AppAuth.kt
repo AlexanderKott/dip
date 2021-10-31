@@ -87,8 +87,6 @@ class AppAuth @Inject constructor(
     //----------------------
 
 
-
-
     fun authUser(login: String, pass: String, callBack: (AppNetState) -> Unit) =
         CoroutineScope(Dispatchers.Default).launch {
             val result : (state: AppNetState)-> Unit = { state ->
@@ -116,9 +114,9 @@ class AppAuth @Inject constructor(
                         }
 
                     } catch (e: IllegalStateException) {
-                        Log.e("aaaa", "  errorr rrr2 ${e.javaClass.simpleName}  ${e.printStackTrace()} ${e.message}")
+                        Log.e("exc", "  error ${e.javaClass.simpleName}  ${e.printStackTrace()} ${e.message}")
                     } catch (e: Exception) {
-                        Log.e("aaaa", "  errorr rrr3 ${e.javaClass.simpleName}")
+                        Log.e("exc", "  error ${e.javaClass.simpleName}")
                     }
                 }
                 AppNetState.NO_INTERNET -> {
@@ -167,7 +165,7 @@ class AppAuth @Inject constructor(
                             }
                         }
                     } catch (e: Exception) {
-                        Log.e("aaaa", "  errorr rrr1 ${e.javaClass.simpleName}")
+                        Log.e("exc", " error ${e.javaClass.simpleName}")
                     }
                 }
 

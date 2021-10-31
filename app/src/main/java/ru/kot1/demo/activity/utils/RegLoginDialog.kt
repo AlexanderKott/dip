@@ -27,14 +27,14 @@ fun Activity.showLoginAuthDialog(
     val dialogView = layoutInflater.inflate(R.layout.login_auth, null)
 
     dialogBuilder.setView(dialogView)
-        .setPositiveButton("OK") { a, b ->
+        .setPositiveButton(getString(R.string.ok)) { a, b ->
             val login = dialogView.findViewById<EditText>(R.id.login)
             val password = dialogView.findViewById<EditText>(R.id.password)
             val name = dialogView.findViewById<EditText>(R.id.name)
 
             actionCallback(login.text.toString(), password.text.toString(), name.text.toString())
         }
-        .setNegativeButton("cancel") { a, b ->
+        .setNegativeButton(getString(R.string.cancel)) { a, b ->
 
         }
 
@@ -112,15 +112,16 @@ private fun showRegFields(
     }
 
     password.addTextChangedListener {
-        checkField(password, password2, alertDialog)
+        checkField(activity,password, password2, alertDialog)
     }
 
     password2.addTextChangedListener {
-        checkField(password2, password, alertDialog)
+        checkField(activity,password2, password, alertDialog)
     }
 }
 
 private fun checkField(
+    activity: Activity,
     password: EditText,
     password2: EditText,
     alertDialog: AlertDialog
@@ -130,7 +131,7 @@ private fun checkField(
             true
 
     } else {
-        password.error = "Passwords don't matching"
+        password.error = activity.getString(R.string.Passwords_do_not_match)
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled =
             false
     }

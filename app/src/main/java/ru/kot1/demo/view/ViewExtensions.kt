@@ -33,7 +33,6 @@ fun ImageView.load(url: String, vararg transforms: BitmapTransformation = emptyA
                 target: com.bumptech.glide.request.target.Target<Drawable>?,
                 isFirstResource: Boolean
             ): Boolean {
-                // Log.e("exc", "intercepted GLIDE error ${e}")
                 return false
             }
 

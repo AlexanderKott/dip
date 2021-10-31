@@ -34,8 +34,6 @@ class EventAllViewModel @Inject constructor(
 ) : ViewModel() {
 
 
-
-
     @ExperimentalPagingApi
     suspend fun events(): Flow<PagingData<Event>> {
         val allUsers = repository.getAllUsersFromDB()

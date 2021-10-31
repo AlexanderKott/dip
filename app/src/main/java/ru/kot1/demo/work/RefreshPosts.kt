@@ -17,19 +17,18 @@ class RefreshPostsWorker @AssistedInject constructor(
     var repository:  AppEntities
     ) : CoroutineWorker(applicationContext, params) {
     companion object {
-        const val name = "ru.netology.work.RefreshPostsWorker"
+        const val name = "RefreshPostsWorker"
     }
 
 
     override suspend fun doWork(): Result = withContext(Dispatchers.Default) {
         try {
             repository.getAllPosts()
-            Result.success() //Воркер уведомляет тех кому это интрерсно (кто на него подписан)
-                              // что результат успешен
-                              //на воркер можно подписаться так же как и на лайв дату
+            repository.getAllUsers()
+            repository.getAllEvents()
+            Result.success()
         } catch (e: Exception) {
-            e.printStackTrace()
-            Result.retry()   //Уведомить андроид ос, что метод надо повторить. Андроид сам выберет когда
+            Result.retry()
         }
     }
 }
