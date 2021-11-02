@@ -138,6 +138,7 @@ class AppAuth @Inject constructor(
         callBack: (AppNetState) -> Unit
     ) =
         CoroutineScope(Dispatchers.Default).launch {
+            initPrefs(context)
             when (repository.checkConnection()) {
                 AppNetState.CONNECTION_ESTABLISHED -> {
                     try {

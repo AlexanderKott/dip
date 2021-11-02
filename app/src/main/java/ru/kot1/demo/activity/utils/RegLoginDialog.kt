@@ -8,6 +8,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ru.kot1.demo.R
 import ru.kot1.demo.activity.AppActivity
 import ru.kot1.demo.repository.AppNetState
@@ -23,9 +24,10 @@ fun Activity.showLoginAuthDialog(
     dialogType: Dialog,
     actionCallback: (login: String, password: String, name: String) -> Unit) {
 
-    val dialogBuilder = AlertDialog.Builder(this)
+    val dialogBuilder = MaterialAlertDialogBuilder(this, R.style.ThemeOverlayAlertDialogX)
     val dialogView = layoutInflater.inflate(R.layout.login_auth, null)
 
+    dialogBuilder.setCancelable(false)
     dialogBuilder.setView(dialogView)
         .setPositiveButton(getString(R.string.ok)) { a, b ->
             val login = dialogView.findViewById<EditText>(R.id.login)
@@ -129,9 +131,12 @@ private fun checkField(
     if (password.text.toString() == password2.text.toString()) {
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled =
             true
+        password.error = null
+        password2.error = null
 
     } else {
         password.error = activity.getString(R.string.Passwords_do_not_match)
+        password2.error = null
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled =
             false
     }
@@ -139,7 +144,7 @@ private fun checkField(
 
 fun Activity.showAuthResultDialog(message: AppNetState) {
     runOnUiThread {
-        val dialog = AlertDialog.Builder(this)
+        val dialog = MaterialAlertDialogBuilder(this, R.style.ThemeOverlayAlertDialogX)
             .setTitle(R.string.enter_dialog)
             .setPositiveButton(android.R.string.ok) { dialog, which -> }
             .setIcon(android.R.drawable.ic_dialog_alert)

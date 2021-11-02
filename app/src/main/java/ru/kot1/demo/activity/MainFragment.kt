@@ -30,9 +30,6 @@ class MainFragment : Fragment() {
     @Inject
     lateinit var repo: AppEntities
 
-
-
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
