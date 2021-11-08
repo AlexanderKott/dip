@@ -26,9 +26,9 @@ import javax.inject.Inject
 class AppAuth @Inject constructor(
     val context: Context,
     val apiService: ApiService,
-    var repository: AuthMethods
+    var repository: AuthMethods,
+    var prefs: SharedPreferences
 ) {
-    private lateinit var prefs: SharedPreferences
 
     companion object {
         const val idKey = "id"
@@ -36,33 +36,7 @@ class AppAuth @Inject constructor(
         var sessionKey : String? = null
     }
 
-    init {
-        initPrefs()
-    }
-
-    private fun initPrefs(){
-        //   prefs = context.getSharedPreferences("authX", Context.MODE_PRIVATE)
-
-        val masterKey = MasterKey.Builder(context, MasterKey.DEFAULT_MASTER_KEY_ALIAS)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
-
-        prefs = EncryptedSharedPreferences.create(
-            context,
-            "authX",
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
-
-    }
-
-
-
-
-
     private val _authStateFlow: MutableStateFlow<AuthState> = MutableStateFlow(AuthState())
-
 
     fun checkAmLogined() {
         val (id, token) = getAuthInfo()

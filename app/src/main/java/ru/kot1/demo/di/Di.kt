@@ -62,6 +62,7 @@ internal object ModuleForSingleton {
     @Provides
     fun getRepositoryInet(repo: AppEntities) = repo as AuthMethods
 
+    @Singleton
     @Provides
     fun getAppDb(@ApplicationContext context: Context) = AppDb.getInstance(context = context)
 
@@ -70,9 +71,10 @@ internal object ModuleForSingleton {
     fun getAppAuth(
         @ApplicationContext context: Context,
         api: ApiService,
-        repo: AppEntities
+        repo: AppEntities,
+        prefs: SharedPreferences
     ): AppAuth {
-        return AppAuth(context, api, repo)
+        return AppAuth(context, api, repo, prefs)
     }
 
 
@@ -102,7 +104,7 @@ internal object ModuleForSingleton {
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
-        // return context.getSharedPreferences("authX", Context.MODE_PRIVATE)
+
     }
 
 
