@@ -34,9 +34,7 @@ import ru.kot1.demo.viewmodel.MediaWorkPostViewModel
 @AndroidEntryPoint
 class PostsAllFragment : Fragment() {
     private val viewModel: PostAllViewModel by activityViewModels()
-    private val authViewModel: AuthViewModel by activityViewModels()
     private val mwPostViewModel: MediaWorkPostViewModel by activityViewModels()
-
     private var _binding: FragmentPostsBinding? = null
 
     @Inject

@@ -2,6 +2,10 @@ package ru.kot1.demo.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener
+import android.util.Log
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import androidx.work.WorkManager
 import com.localebro.okhttpprofiler.OkHttpProfilerInterceptor
 import dagger.Module
@@ -19,6 +23,8 @@ import ru.kot1.demo.api.ApiService
 import ru.kot1.demo.auth.AppAuth
 import ru.kot1.demo.db.AppDb
 import ru.kot1.demo.repository.*
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
 import javax.inject.Named
 import javax.inject.Singleton
@@ -76,7 +82,7 @@ internal object ModuleForSingleton {
 
 
     @Provides
-    fun getRetrofit(@Named("ApiClient") okhttp: OkHttpClient ) = Retrofit.Builder()
+    fun getRetrofit(@Named("ApiClient") okhttp: OkHttpClient) = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .client(okhttp)
         .addConverterFactory(GsonConverterFactory.create())
@@ -85,31 +91,46 @@ internal object ModuleForSingleton {
 
     @Provides
     fun getPrefs(@ApplicationContext context: Context): SharedPreferences {
-        return context.getSharedPreferences("authX", Context.MODE_PRIVATE)
+        val masterKey = MasterKey.Builder(context, MasterKey.DEFAULT_MASTER_KEY_ALIAS)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        return EncryptedSharedPreferences.create(
+            context,
+            "authX",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+        // return context.getSharedPreferences("authX", Context.MODE_PRIVATE)
     }
 
 
-    @Provides @Named("DownloadClient")
+
+    @Provides
+    @Named("DownloadClient")
     fun getDownloadingClient() = OkHttpClient.Builder()
-    .connectTimeout(55, TimeUnit.SECONDS)
-    .writeTimeout(30, TimeUnit.SECONDS)
-    .readTimeout(30, TimeUnit.SECONDS)
-    .build()
+        .connectTimeout(55, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .build()
 
 
-    @Provides @Named("ApiClient")
+    @Provides
+    @Named("ApiClient")
     fun getService(prefs: SharedPreferences) = OkHttpClient.Builder()
         .connectTimeout(55, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .addInterceptor(logging)
         .addInterceptor { chain ->
-            prefs.getString("token", null)?.let { token ->
+            if (AppAuth.sessionKey != null) {
                 val newRequest = chain.request().newBuilder()
-                    .addHeader("Authorization", token)
+                    .addHeader("Authorization", AppAuth.sessionKey ?: "null")
                     .build()
                 return@addInterceptor chain.proceed(newRequest)
             }
+
             chain.proceed(chain.request())
         }.apply {
             if (BuildConfig.DEBUG) {

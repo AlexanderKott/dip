@@ -34,9 +34,6 @@ class EventsAllFragment : Fragment() {
     private val viewModel: EventAllViewModel by activityViewModels()
     private val edViewModel: EditEventViewModel by activityViewModels()
     private val mwViewModel: MediaWorkEventViewModel by activityViewModels()
-
-
-
     private var _binding: FragmentEventsBinding? = null
 
     override fun onDestroyView() {
@@ -129,6 +126,12 @@ class EventsAllFragment : Fragment() {
                 }
             }
         )
+        edViewModel.dataState.observe(viewLifecycleOwner) { state ->
+            if (state.error) {
+                Snackbar.make(_binding!!.root, R.string.login_first, Snackbar.LENGTH_LONG)
+                    .show()
+            }
+        }
 
 
         viewModel.dataState.observe(viewLifecycleOwner) { state ->

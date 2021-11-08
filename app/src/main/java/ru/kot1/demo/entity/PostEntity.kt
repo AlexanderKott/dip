@@ -14,7 +14,7 @@ data class PostEntity(
     val id: Long,
     val author: String?,
     val authorAvatar: String?,
-    val authorId: Int,
+    val authorId: Long,
     val content: String?,
     @Embedded
     val coords: Coords?,

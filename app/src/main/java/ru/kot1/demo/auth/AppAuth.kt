@@ -5,6 +5,8 @@ import android.content.SharedPreferences
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +18,8 @@ import ru.kot1.demo.dto.AuthState
 import ru.kot1.demo.error.ApiError
 import ru.kot1.demo.repository.AppNetState
 import ru.kot1.demo.repository.AuthMethods
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 
 
@@ -24,50 +28,62 @@ class AppAuth @Inject constructor(
     val apiService: ApiService,
     var repository: AuthMethods
 ) {
+    private lateinit var prefs: SharedPreferences
+
     companion object {
-        private lateinit var prefs: SharedPreferences
         const val idKey = "id"
         const val tokenKey = "token"
-
-        fun initPrefs(context: Context) {
-            prefs = context.getSharedPreferences("authX", Context.MODE_PRIVATE)
-        }
-
-        fun getAuthInfo(context: Context): Pair<Long, String?> {
-            initPrefs(context)
-            return prefs.getLong(idKey, 0) to
-                    prefs.getString(tokenKey, null)
-        }
+        var sessionKey : String? = null
     }
+
+    init {
+        initPrefs()
+    }
+
+    private fun initPrefs(){
+        //   prefs = context.getSharedPreferences("authX", Context.MODE_PRIVATE)
+
+        val masterKey = MasterKey.Builder(context, MasterKey.DEFAULT_MASTER_KEY_ALIAS)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        prefs = EncryptedSharedPreferences.create(
+            context,
+            "authX",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+
+    }
+
+
+
+
 
     private val _authStateFlow: MutableStateFlow<AuthState> = MutableStateFlow(AuthState())
 
 
     fun checkAmLogined() {
-        val (id, token) = getAuthInfo(context)
+        val (id, token) = getAuthInfo()
         if (id == 0L || token == null) {  //ничего нет- чистим
-            cleanToken()
+            removeAuth()
             // токена нет - ничего не делать
 
         } else {
             // проверить что ключ валидный
             checkTheToken({
                 //оказался валидный? - присваиваем
+                 sessionKey = token
                 _authStateFlow.value = AuthState(id, token)
             }, {
-                cleanToken()
+                removeAuth()
             })
 
         }
     }
 
-    private fun cleanToken() {
-        _authStateFlow.value = AuthState()
-        with(prefs.edit()) {
-            clear()
-            apply()
-        }
-    }
+
 
     private fun checkTheToken(success: () -> Unit, failure: () -> Unit) =
         CoroutineScope(Dispatchers.Default).launch {
@@ -96,7 +112,6 @@ class AppAuth @Inject constructor(
             }
             when (repository.checkConnection()) {
                 AppNetState.CONNECTION_ESTABLISHED -> {
-                    initPrefs(context)
                     try {
                         repository.authUser(login, pass) { id, token ->
                             setAuth(id, token)
@@ -138,12 +153,11 @@ class AppAuth @Inject constructor(
         callBack: (AppNetState) -> Unit
     ) =
         CoroutineScope(Dispatchers.Default).launch {
-            initPrefs(context)
             when (repository.checkConnection()) {
                 AppNetState.CONNECTION_ESTABLISHED -> {
                     try {
                         repository.regNewUser(login, pass, name, uri) { id, token ->
-                            cleanToken()
+                            removeAuth()
                             setAuth(id, token)
                             Handler(Looper.getMainLooper()).post {
                                 callBack(AppNetState.CONNECTION_ESTABLISHED)
@@ -190,23 +204,40 @@ class AppAuth @Inject constructor(
 
     @Synchronized
     private fun setAuth(id: Long, token: String) {
+        val charset: Charset = StandardCharsets.US_ASCII
+        val byteArrray: ByteArray = charset.encode(token).array()
+        val result = byteArrray.joinToString()
+
+        sessionKey = token
+
        _authStateFlow.value = AuthState(id, token)
          with(prefs.edit()) {
             putLong(idKey, id)
-            putString(tokenKey, token)
+            putString(tokenKey, result)
             apply()
         }
+    }
+
+    fun getAuthInfo(): Pair<Long, String?> {
+        val charset: Charset = StandardCharsets.US_ASCII
+        val s = prefs.getString(tokenKey, null)?.split(", ")?.map {it.toByte()}?.toByteArray()
+        val result3 = String(s ?: byteArrayOf(), charset)
+
+        sessionKey = result3
+
+        return prefs.getLong(idKey, 0) to result3
+
     }
 
     @Synchronized
     fun removeAuth() {
         _authStateFlow.value = AuthState()
+        sessionKey = null
         with(prefs.edit()) {
             clear()
             apply()
         }
     }
-
 
 }
 

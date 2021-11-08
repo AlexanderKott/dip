@@ -5,6 +5,8 @@ import androidx.paging.*
 import androidx.work.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.kot1.demo.auth.AppAuth
@@ -19,21 +21,31 @@ class PostViewModel @Inject constructor(var repository: AppEntities ,
                                         var workManager: WorkManager,
                                         var auth: AppAuth
 ) : ViewModel() {
-    private var postAuthorId : Long = -1
 
     val cachedposts = repository.pdata.cachedIn(viewModelScope)
 
-    val feedModels = cachedposts.map { pagingData ->
-        if (postAuthorId == -1L){
-            pagingData.map { post ->
-                    PostModel(post = post) as FeedModel
+    private val userId = MutableStateFlow<Long>(0)
+
+    val feedModels = userId.flatMapLatest { id ->
+        cachedposts.map { pagingData ->
+            if (userId.value == 0L) {
+                pagingData.map { post ->
+                    PostModel(post = post.copy(logined = false)) as FeedModel
                 }
-        } else { pagingData.filter { postAuthorId == it.authorId.toLong()  }
-            .map { post ->
-                PostModel(post = post) as FeedModel
+            } else {
+                pagingData.filter { userId.value == it.authorId }
+                    .map { post ->
+                        if (userId.value == auth.authStateFlow.value.id) {
+                            PostModel(post = post.copy(logined = true)) as FeedModel
+                        } else {
+                            PostModel(post = post) as FeedModel
+                        }
+                    }
+
             }
         }
     }
+
 
 
     private val _dataState = SingleLiveEvent<FeedModelState>()
@@ -42,7 +54,7 @@ class PostViewModel @Inject constructor(var repository: AppEntities ,
 
 
     fun getWallById(id: Long) = viewModelScope.launch {
-        postAuthorId = id
+        userId.value = id
         try {
             _dataState.value = FeedModelState(loading = true)
             repository.getPostsById(id)
@@ -55,7 +67,7 @@ class PostViewModel @Inject constructor(var repository: AppEntities ,
 
 
     fun refreshPosts() = viewModelScope.launch {
-        getWallById(postAuthorId)
+        getWallById(userId.value)
     }
 }
 

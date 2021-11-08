@@ -4,7 +4,7 @@ data class Post(
     val attachment: Attachment?,
     val author: String?,
     val authorAvatar: String?,
-    val authorId: Int,
+    val authorId: Long,
     val content: String?,
     val coords: Coords?,
     val id: Long,

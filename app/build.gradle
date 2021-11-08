@@ -16,7 +16,7 @@ android {
     }
 
     compileSdkVersion 30
-    buildToolsVersion "30.0.2"
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "ru.kot1.demo"
@@ -51,7 +51,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             manifestPlaceholders.usesCleartextTraffic = false
             buildConfigField "String", "BASE_URL", '"http://alexk-demo-blog.herokuapp.com"'
-            buildConfigField "String", "MAPKEY", properties.getProperty("yandexMapKey", "")
+            buildConfigField "String", "MAPKEY", properties.getProperty("yandexMapKey", "") //
+
         }
         debug {
             minifyEnabled false
@@ -90,18 +91,25 @@ dependencies {
     def paging_version = "3.0.1"
     def hilt_version ="2.37"
     def lottieVersion ="4.2.0"
+    def workhm ="1.0.0"
+    def hc ="1.0.0"
+    def desugar ="1.1.5"
+    def viewpager2 ="1.0.0"
+    def filepicker ="1.9.1"
+    def mapsmobile ="4.0.0-lite"
+    def okhttpprofiler ="1.0.8"
+    def crypto ="1.1.0-alpha01"
 
-    implementation 'androidx.hilt:hilt-work:1.0.0'
-    kapt("androidx.hilt:hilt-compiler:1.0.0")
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
-    implementation("androidx.viewpager2:viewpager2:1.0.0")
-    implementation 'com.nbsp:materialfilepicker:1.9.1'
+
+    implementation "androidx.hilt:hilt-work:$workhm"
+    kapt("androidx.hilt:hilt-compiler:$hc")
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugar"
+    implementation "androidx.viewpager2:viewpager2:$viewpager2"
+    implementation "com.nbsp:materialfilepicker:$filepicker"
     implementation "com.airbnb.android:lottie:$lottieVersion"
-    implementation 'com.yandex.android:maps.mobile:4.0.0-full'
-
-    implementation 'com.localebro:okhttpprofiler:1.0.8'
-
-
+    implementation "com.yandex.android:maps.mobile:$mapsmobile"
+    implementation "com.localebro:okhttpprofiler:$okhttpprofiler"
+    implementation "androidx.security:security-crypto:$crypto"
     implementation ("com.github.bumptech.glide:okhttp3-integration:$glide_version"){
         exclude group: 'glide-parent'
     }

@@ -28,7 +28,7 @@ import java.lang.reflect.Type
     UserKeyEntry::class,
     EventKeyEntry::class,
     JobEntity::class
-                     ], version = 46, exportSchema = false)
+                     ], version = 47, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDb : RoomDatabase() {
     abstract fun userDao(): UserDao

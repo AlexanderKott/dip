@@ -149,21 +149,35 @@ class EditEventViewModel @Inject constructor(
     }
 
 
+    private val _dataState = SingleLiveEvent<FeedModelState>()
+    val dataState: SingleLiveEvent<FeedModelState>
+        get() = _dataState
+
+
+
     fun setLikeOrDislike(event: Event) = viewModelScope.launch {
-        if (event.likedByMe) {
-            repository.setDislikeToEventById(event.id)
-        } else {
-            repository.likeEventById(event.id)
+        try {
+            if (event.likedByMe) {
+                repository.setDislikeToEventById(event.id)
+            } else {
+                repository.likeEventById(event.id)
+            }
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(error = true)
         }
     }
 
 
     fun participate(event: Event) = viewModelScope.launch {
+        try {
         if (event.participatedByMe) {
             repository.doNotParticipateToEvent(event.id)
         } else {
             repository.participateToEvent(event.id)
         }
+    } catch (e: Exception) {
+        _dataState.value = FeedModelState(error = true)
+    }
     }
 }
 

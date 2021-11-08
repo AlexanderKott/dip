@@ -24,7 +24,6 @@ import java.io.File
 import javax.inject.Inject
 
 
-
 @HiltViewModel
 @ExperimentalCoroutinesApi
 class PostAllViewModel @Inject constructor(
@@ -36,6 +35,10 @@ class PostAllViewModel @Inject constructor(
 
     private val cachedposts = repository.pdata.cachedIn(viewModelScope)
 
+    private val _dataState = SingleLiveEvent<FeedModelState>()
+    val dataState: SingleLiveEvent<FeedModelState>
+        get() = _dataState
+
 
     val feedModels = auth.authStateFlow.flatMapLatest { user ->
         cachedposts.map { pagingData ->
@@ -44,11 +47,6 @@ class PostAllViewModel @Inject constructor(
             }
         }
     }
-
-
-    private val _dataState = SingleLiveEvent<FeedModelState>()
-    val dataState: SingleLiveEvent<FeedModelState>
-        get() = _dataState
 
 
     fun loadPosts() = viewModelScope.launch {
@@ -72,11 +70,17 @@ class PostAllViewModel @Inject constructor(
     }
 
 
+
+
     fun like(post: Post) = viewModelScope.launch {
-        if (post.likedByMe) {
-            repository.disLikeById(post.id)
-        } else {
-            repository.likeById(post.id)
+        try {
+            if (post.likedByMe) {
+                repository.disLikeById(post.id)
+            } else {
+                repository.likeById(post.id)
+            }
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(error = true)
         }
     }
 
