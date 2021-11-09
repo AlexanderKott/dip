@@ -6,6 +6,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import androidx.security.crypto.MasterKeys
 import androidx.work.WorkManager
 import com.localebro.okhttpprofiler.OkHttpProfilerInterceptor
 import dagger.Module
@@ -90,25 +91,14 @@ internal object ModuleForSingleton {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-
+    @Singleton
     @Provides
     fun getPrefs(@ApplicationContext context: Context): SharedPreferences {
-        val masterKey = MasterKey.Builder(context, MasterKey.DEFAULT_MASTER_KEY_ALIAS)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
-
-        return EncryptedSharedPreferences.create(
-            context,
-            "authX",
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
-
+        return  context.getSharedPreferences("authX", Context.MODE_PRIVATE);
     }
 
 
-
+    @Singleton
     @Provides
     @Named("DownloadClient")
     fun getDownloadingClient() = OkHttpClient.Builder()
@@ -118,9 +108,10 @@ internal object ModuleForSingleton {
         .build()
 
 
+    @Singleton
     @Provides
     @Named("ApiClient")
-    fun getService(prefs: SharedPreferences) = OkHttpClient.Builder()
+    fun getService() = OkHttpClient.Builder()
         .connectTimeout(55, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)

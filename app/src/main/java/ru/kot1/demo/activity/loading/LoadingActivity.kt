@@ -11,7 +11,7 @@ import ru.kot1.demo.R
 
 
 @AndroidEntryPoint
-class LoadingActivity : AppCompatActivity(R.layout.activity_app) {
+class LoadingActivity : AppCompatActivity(R.layout.activity_loading) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -23,7 +23,7 @@ class LoadingActivity : AppCompatActivity(R.layout.activity_app) {
 
             supportFragmentManager.commit {
                 setReorderingAllowed(true)
-                replace<LoadingFragment>(R.id.fragment_container_view, "loading")
+                replace<LoadingFragment>(R.id.fragment_loading, "loading")
             }
     }
 
